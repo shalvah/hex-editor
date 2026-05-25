@@ -10,6 +10,7 @@ int ByteBuffer::size() const {
 }
 
 quint8 ByteBuffer::byteAt(int index) const {
+    if (index < 0 || index >= m_data.size()) return 0;
     return static_cast<quint8>(m_data.at(index));
 }
 

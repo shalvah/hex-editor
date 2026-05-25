@@ -4,11 +4,13 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QDockWidget>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
 {
     setupTable();
+    setupFindPanel(); // Set up Find panel before setting up the menu bar, so m_findAction references an existing handle
     setupMenuBar();
     refreshWindowElements();
     resize(1100, 650);
@@ -37,6 +39,13 @@ void MainWindow::setupMenuBar() {
     auto *exitAction = fileMenu->addAction("E&xit");
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QWidget::close);
+
+    // Edit menu
+    auto *editMenu = menuBar()->addMenu("&Edit");
+
+    m_findAction = editMenu->addAction("&Find…");
+    m_findAction->setShortcut(QKeySequence::Find);
+    connect(m_findAction, &QAction::triggered, m_findPanel, &FindPanel::activate);
 }
 
 void MainWindow::openFileDialog() {
@@ -101,15 +110,31 @@ void MainWindow::saveFile() {
     refreshWindowElements();
 }
 
+void MainWindow::setupFindPanel() {
+    m_findPanel = new FindPanel(m_buffer, m_model, this);
+    m_findPanel->hide();
+
+    auto *dock = new QDockWidget(this);
+    dock->setWidget(m_findPanel);
+    dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    dock->setTitleBarWidget(new QWidget()); // hide title bar
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+
+    connect(m_findPanel, &FindPanel::requestScrollToRow, this, [this](int row) {
+        m_tableView->scrollTo(m_model.index(row, 0));
+    });
+}
+
 void MainWindow::refreshWindowElements() {
     bool fileLoaded = !m_currentPath.isEmpty();
-
     m_saveAction->setEnabled(fileLoaded);
+    m_findAction->setEnabled(fileLoaded);
 
     if (!fileLoaded) {
         setWindowTitle("Hex Editor");
         return;
     }
+
     QString name = QFileInfo(m_currentPath).fileName();
     setWindowTitle(QString("%1%2 — Hex Editor")
                        .arg(name)

@@ -54,6 +54,8 @@ public:
 
     void setHighlightedByte(int byteIndex);
 
+    void setSearchMatches(const QList<int> &matches, int current);
+
 private:
     /*
      * Format a byte for display in the UI
@@ -66,4 +68,7 @@ private:
 
     ByteBuffer &m_buffer;
     int m_highlightedByte = -1;
+
+    QList<int> m_searchMatches; // List of byte indices of matches
+    int        m_currentMatch = -1; // Byte index of current match
 };

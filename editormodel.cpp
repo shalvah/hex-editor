@@ -72,7 +72,12 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::BackgroundRole) {
         if (m_buffer.modifiedIndices().contains(byteIdx))
             return QColor(0x66, 0x5D, 0x29); // yellow — modified
+        if (byteIdx == m_currentMatch)
+            return QColor(0xFF, 0x80, 0x00); // orange — current match
+        if (m_searchMatches.contains(byteIdx))
+            return QColor(0xFF, 0xD0, 0x80); // light orange — other matches
         if (byteIdx == m_highlightedByte) {
+             // Set accent colour on currently highlighted cell, so we can sync to other panels
             QPalette palette = QGuiApplication::palette();
             return palette.color(QPalette::Highlight);
         }
@@ -164,6 +169,13 @@ void EditorModel::setHighlightedByte(int byteIndex) {
     };
     invalidateRow(old);
     invalidateRow(byteIndex);
+}
+
+void EditorModel::setSearchMatches(const QList<int> &matches, int current) {
+    m_searchMatches = matches;
+    m_currentMatch = (current >= 0 && current < matches.size()) ? matches[current] : -1;
+    // Emit dataChanged, forcing rerender of the cells
+    emit dataChanged(index(0, 0), index(rowCount() - 1, Constants::TOTAL_COLUMNS - 1));
 }
 
 void EditorModel::reload() {

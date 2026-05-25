@@ -4,6 +4,7 @@
 #include "editormodel.h"
 #include "editorview.h"
 #include "filemanager.h"
+#include "findpanel.h"
 
 
 class MainWindow : public QMainWindow {
@@ -19,6 +20,7 @@ protected:
 private:
     void setupTable();
     void setupMenuBar();
+    void setupFindPanel();
 
     /*
      * Prompts the user to save their work if there are unsaved changes.
@@ -47,13 +49,15 @@ private:
     // Dependencies
     ByteBuffer  m_buffer;
     EditorModel m_model;
-    FileManager  m_fileManager;
-    EditorView *m_tableView = nullptr;
+    FileManager m_fileManager;
+    EditorView  *m_tableView = nullptr;
+    FindPanel   *m_findPanel = nullptr;
 
     /*
      * Path to the currently loaded file. Empty if no file loaded.
      */
-    QString      m_currentPath;
+    QString m_currentPath;
     QAction *m_saveAction = nullptr;
+    QAction *m_findAction = nullptr;
 
 };

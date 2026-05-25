@@ -17,6 +17,7 @@ qt_add_executable(hex-editor
     constants.h
     editormodel.h editormodel.cpp
     editorview.h editorview.cpp
+    findpanel.h findpanel.cpp
 )
 
 target_link_libraries(hex-editor
