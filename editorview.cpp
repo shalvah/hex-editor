@@ -4,7 +4,7 @@
 #include <QHeaderView>
 #include <QPainter>
 
-// ── EditorDelegate ───────────────────────────────────────────────────────────
+// EditorDelegate
 
 EditorDelegate::EditorDelegate(QObject *parent)
     : QStyledItemDelegate(parent) {}
@@ -53,7 +53,7 @@ void EditorDelegate::setModelData(QWidget *editor,
     model->setData(index, edit->text(), Qt::EditRole);
 }
 
-// ── EditorView ───────────────────────────────────────────────────────────────
+// EditorView
 
 EditorView::EditorView(QWidget *parent)
     : QTableView(parent)
@@ -88,6 +88,9 @@ void EditorView::applyColumnWidths() {
 
     for (int col = 0; col < Constants::TOTAL_COLUMNS; ++col) {
         auto panel = EditorModel::panelForColumn(col);
+        // CHAR columns display only one character, so need only a little space.
+        // HEX columns display two, so need a little more space.
+        // BIN columns display 6, so we give them much more space.
         switch (panel) {
         case EditorModel::Panel::Hex:  setColumnWidth(col, 36); break;
         case EditorModel::Panel::Char: setColumnWidth(col, 24); break;
