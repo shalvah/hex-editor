@@ -16,6 +16,12 @@ MainWindow::MainWindow(QWidget *parent)
     setupViews();
     setupFindPanel(); // Set up Find panel before setting up the menu bar, so m_findAction references an existing handle
     setupMenuBar();
+
+    // Refresh window elements (like the title asterisk) when data is changed
+    connect(&m_model, &EditorModel::dataChanged, this, [this]() {
+        refreshWindowElements();
+    });
+
     refreshWindowElements();
     resize(1100, 650);
 }
