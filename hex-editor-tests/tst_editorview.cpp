@@ -66,6 +66,70 @@ private slots:
         QCOMPARE(buf.byteAt(0), quint8(0xFF));
         delete editor;
     }
+
+    void delegateSetEditorData() {
+        EditorDelegate delegate;
+        ByteBuffer buf;
+        buf.load(QByteArray("\xAB", 1)); // Loads 0xAB
+        EditorModel model(buf);
+
+        QTableView view;
+        view.setModel(&model);
+        QModelIndex index = model.index(0, 0); // Hex column
+
+        QWidget *editor = delegate.createEditor(&view, QStyleOptionViewItem(), index);
+        QLineEdit *line = qobject_cast<QLineEdit*>(editor);
+        
+        // Pull data from model to editor
+        delegate.setEditorData(editor, index);
+        
+        QCOMPARE(line->text(), QString("AB"));
+        QVERIFY(line->hasSelectedText()); // Should select all text automatically
+        
+        delete editor;
+    }
+
+    void viewAppliesColumnWidths() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00", 1));
+        EditorModel model(buf);
+        EditorView view;
+        
+        view.setEditorModel(&model);
+        
+        // Hex columns (0-7) should be 36px
+        QCOMPARE(view.columnWidth(0), 36);
+        QCOMPARE(view.columnWidth(7), 36);
+        
+        // Char columns (8-15) should be 24px
+        QCOMPARE(view.columnWidth(8), 24);
+        QCOMPARE(view.columnWidth(15), 24);
+        
+        // Bin columns (16-23) should be 72px
+        QCOMPARE(view.columnWidth(16), 72);
+        QCOMPARE(view.columnWidth(23), 72);
+    }
+
+    void viewSelectionUpdatesHighlight() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00\x01\x02", 3));
+        EditorModel model(buf);
+        EditorView view;
+        
+        view.setEditorModel(&model);
+        
+        // Select the second byte in the Char panel (row 0, col 9)
+        QModelIndex charIndex = model.index(0, 9);
+        view.selectionModel()->setCurrentIndex(charIndex, QItemSelectionModel::Select);
+        
+        // Let Qt's event loop process the selection signal
+        QCoreApplication::processEvents();
+        
+        // We can verify this via the EditorModel's internal highlighted state
+        // By checking if the background role is active on the corresponding hex cell
+        QVariant bg = model.data(model.index(0, 1), Qt::BackgroundRole);
+        QVERIFY(bg.isValid());
+    }
 };
 
 QTEST_MAIN(EditorViewTest)

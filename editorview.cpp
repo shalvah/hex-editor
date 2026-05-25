@@ -13,26 +13,26 @@ QWidget *EditorDelegate::createEditor(QWidget *parent,
                                       const QStyleOptionViewItem &,
                                       const QModelIndex &index) const
 {
-    auto *edit = new QLineEdit(parent);
-    edit->setAlignment(Qt::AlignCenter);
+    auto *editField = new QLineEdit(parent);
+    editField->setAlignment(Qt::AlignCenter);
 
-    // Apply input mask based on panel so invalid characters can't be typed
+    // We set an input mask for each panel so invalid characters can't be typed
     auto panel = EditorModel::panelForColumn(index.column());
     switch (panel) {
     case EditorModel::Panel::Hex:
-        edit->setMaxLength(2);
-        edit->setInputMask("HH"); // exactly 2 hex digits
+        editField->setMaxLength(2);
+        editField->setInputMask("HH"); // exactly 2 hex digits
         break;
     case EditorModel::Panel::Char:
-        edit->setMaxLength(1);
+        editField->setMaxLength(1);
         break;
     case EditorModel::Panel::Bin:
-        edit->setMaxLength(8);
-        edit->setInputMask("BBBBBBBB"); // exactly 8 binary digits
+        editField->setMaxLength(8);
+        editField->setInputMask("BBBBBBBB"); // exactly 8 binary digits
         break;
     }
 
-    return edit;
+    return editField;
 }
 
 void EditorDelegate::setEditorData(QWidget *editor,
@@ -73,7 +73,7 @@ void EditorView::setEditorModel(EditorModel *model) {
     setModel(model);
     applyColumnWidths();
 
-    // Cross-panel highlight for current selection
+    // Highlight the currently selected cell across all 3 panels
     connect(selectionModel(), &QItemSelectionModel::currentChanged,
             this, [this](const QModelIndex &current) {
                 if (!current.isValid()) return;
@@ -106,7 +106,7 @@ void EditorView::paintEvent(QPaintEvent *event) {
     QPainter painter(viewport());
     painter.setPen(QPen(QColor(180, 180, 180), 2));
 
-    // Draw a separator line after column 7 and after column 15
+    // Draw a separator line between panels: after column 7 and after column 15
     for (int boundary : {Constants::BYTES_PER_ROW, Constants::BYTES_PER_ROW * 2}) {
         int x = columnViewportPosition(boundary);
         painter.drawLine(x, 0, x, viewport()->height());
