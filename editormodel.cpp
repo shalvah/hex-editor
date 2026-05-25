@@ -35,14 +35,14 @@ int EditorModel::byteIndex(int row, int col) const {
 QVariant EditorModel::formatByte(quint8 byte, Panel panel) const {
     switch (panel) {
     case Panel::Hex:
-        return QString("%1").arg(byte, 2, 16, QChar('0')).toUpper();
+        return QString::asprintf("%02X", byte);
     case Panel::Char:
-        // Printable ASCII: 0x20–0x7E; everything else shows as a centre dot (·, U+00B7)
+        // Printable ASCII: 0x20–0x7E; everything else is invalid
         return (byte >= 0x20 && byte <= 0x7E)
                    ? QString(QChar(byte))
-                   : QString("·");
+                   : QVariant();
     case Panel::Bin:
-        return QString("%1").arg(byte, 8, 2, QChar('0'));
+        return QString::number(byte, 2).rightJustified(8, '0');
     }
     return {};
 }
@@ -53,8 +53,16 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
     int byteIdx = byteIndex(index.row(), index.column());
     if (byteIdx >= m_buffer.size()) return {};
 
-    if (role == Qt::DisplayRole || role == Qt::EditRole)
-        return formatByte(m_buffer.byteAt(byteIdx), panelForColumn(index.column()));
+    if (role == Qt::DisplayRole) {
+        auto formatted = formatByte(m_buffer.byteAt(byteIdx), panelForColumn(index.column()));
+        // For non-printable characters, we show a centre dot (·, U+00B7)
+        return formatted.isValid() ? formatted : QString(u"·");
+    }
+
+    if (role == Qt::EditRole) {
+        auto formatted = formatByte(m_buffer.byteAt(byteIdx), panelForColumn(index.column()));
+        return formatted.isValid() ? formatted : QString("");
+    }
 
     if (role == Qt::TextAlignmentRole)
         return Qt::AlignCenter;
