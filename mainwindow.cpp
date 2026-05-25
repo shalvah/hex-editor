@@ -119,6 +119,8 @@ void MainWindow::setupFindPanel() {
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     dock->setTitleBarWidget(new QWidget()); // hide title bar
     addDockWidget(Qt::BottomDockWidgetArea, dock);
+    
+    dock->hide(); // Hide the entire dock by default so it takes no space
 
     connect(m_findPanel, &FindPanel::requestScrollToRow, this, [this](int row) {
         m_tableView->scrollTo(m_model.index(row, 0));

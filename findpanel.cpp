@@ -60,10 +60,14 @@ FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
     connect(prevBtn,  &QPushButton::clicked, this, &FindPanel::findPrevious);
     connect(nextBtn,  &QPushButton::clicked, this, &FindPanel::findNext);
     connect(closeBtn, &QPushButton::clicked, this, &FindPanel::clearResults);
-    connect(closeBtn, &QPushButton::clicked, this, &QWidget::hide);
+    connect(closeBtn, &QPushButton::clicked, this, [this](){
+        if (parentWidget()) parentWidget()->hide();
+        hide();
+    });
 }
 
 void FindPanel::activate() {
+    if (parentWidget()) parentWidget()->show();
     show();
     m_input->setFocus();
     m_input->selectAll();
