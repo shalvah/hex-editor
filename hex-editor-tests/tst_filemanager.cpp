@@ -76,6 +76,25 @@ private slots:
         auto err = fm.loadFile(tmp.fileName(), buf);
         QCOMPARE(err, FileManager::Error::TooLarge);
     }
+
+    void saveToInvalidPath() {
+        FileManager fm;
+        ByteBuffer buf;
+        buf.load(QByteArray("data"));
+        
+        auto err = fm.saveFile("/invalid_directory_that_doesnt_exist/file.bin", buf);
+        QCOMPARE(err, FileManager::Error::CouldNotOpenFileForWriting);
+    }
+
+    void errorMessagesAreValid() {
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::None).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::NotFound).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::TooLarge).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::ReadFailed).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::WriteFailed).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::CouldNotOpenFileForReading).isEmpty());
+        QVERIFY(!FileManager::errorMessage(FileManager::Error::CouldNotOpenFileForWriting).isEmpty());
+    }
 };
 
 QTEST_MAIN(FileManagerTest)

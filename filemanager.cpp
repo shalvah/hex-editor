@@ -7,13 +7,13 @@
 
 QString FileManager::errorMessage(Error error) {
     switch (error) {
-    case Error::None:        return "No error";
-    case Error::NotFound:    return "File not found";
-    case Error::NoPermission:return "Permission denied";
-    case Error::TooLarge:    return "File exceeds 100 MB limit";
-    case Error::ReadFailed:  return "Failed to read file";
-    case Error::WriteFailed: return "Failed to write file";
+    case Error::None:                       return "No error";
+    case Error::NotFound:                   return "File not found";
+    case Error::TooLarge:                   return "File exceeds 100 MB limit";
+    case Error::ReadFailed:                 return "Failed to read file";
+    case Error::WriteFailed:                return "Failed to write file";
     case Error::CouldNotOpenFileForWriting: return "Could not open file for writing";
+    case Error::CouldNotOpenFileForReading: return "Could not open file for reading";
     }
     return "Unknown error";
 }
@@ -22,9 +22,8 @@ FileManager::Error FileManager::loadFile(const QString &path, ByteBuffer &buffer
     QFile file(path);
     // Avoid race conditions between time-of-open and time-of-use: open file first, then handle possible errors.
     if (!file.open(QIODevice::ReadOnly)) {
-        if (!QFileInfo::exists(path))
-            return Error::NotFound;
-        return Error::NoPermission;
+        if (!QFileInfo::exists(path)) return Error::NotFound;
+        return Error::CouldNotOpenFileForReading;
     }
 
     if (file.size() > Constants::MAX_FILE_SIZE)

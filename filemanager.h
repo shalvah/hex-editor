@@ -3,16 +3,20 @@
 
 class ByteBuffer;
 
+/**
+ * @brief The FileManager class is the bridge between our data model and the filesystem.
+ * Responsible for loading from and writing to files.
+ */
 class FileManager {
 public:
     enum class Error {
         None,
         NotFound,
-        NoPermission,
         TooLarge,
         ReadFailed,
-        CouldNotOpenFileForWriting,
         WriteFailed,
+        CouldNotOpenFileForReading,
+        CouldNotOpenFileForWriting,
     };
 
     static QString errorMessage(Error error);

@@ -121,6 +121,82 @@ private slots:
         QCOMPARE(model.byteIndex(1, 0),  8); // second row
     }
 
+    void headerDataFormatting() {
+        ByteBuffer buf;
+        buf.load(QByteArray(20, 0x00)); // 3 rows
+        EditorModel model(buf);
+
+        // Vertical headers (row offsets in hex)
+        QCOMPARE(model.headerData(0, Qt::Vertical).toString(), QString("0x00000000"));
+        QCOMPARE(model.headerData(1, Qt::Vertical).toString(), QString("0x00000008"));
+        QCOMPARE(model.headerData(2, Qt::Vertical).toString(), QString("0x00000010"));
+
+        // Horizontal headers (Hex panel)
+        QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("0"));
+        QCOMPARE(model.headerData(7, Qt::Horizontal).toString(), QString("7"));
+
+        // Horizontal headers (Char panel)
+        QCOMPARE(model.headerData(8, Qt::Horizontal).toString(), QString("0"));
+        QCOMPARE(model.headerData(15, Qt::Horizontal).toString(), QString("7"));
+
+        // Horizontal headers (Bin panel)
+        QCOMPARE(model.headerData(16, Qt::Horizontal).toString(), QString("0"));
+        QCOMPARE(model.headerData(23, Qt::Horizontal).toString(), QString("7"));
+    }
+
+    void flagsForCells() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00", 1)); // Only 1 byte loaded
+        EditorModel model(buf);
+
+        // Valid cells should be selectable, enabled, and editable
+        Qt::ItemFlags validFlags = model.flags(model.index(0, 0));
+        QVERIFY(validFlags & Qt::ItemIsSelectable);
+        QVERIFY(validFlags & Qt::ItemIsEnabled);
+        QVERIFY(validFlags & Qt::ItemIsEditable);
+
+        // Out of bounds cells in the row should just return NoItemFlags
+        Qt::ItemFlags invalidFlags = model.flags(model.index(0, 1));
+        QCOMPARE(invalidFlags, Qt::NoItemFlags);
+    }
+
+    void outOfBoundsCellsReturnEmptyData() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00", 1)); // Only 1 byte loaded
+        EditorModel model(buf);
+
+        // Cell 0 is valid, should have string
+        QCOMPARE(model.data(model.index(0, 0)).toString(), QString("00"));
+        
+        // Cell 1 is out of bounds, should return invalid QVariant
+        QVERIFY(!model.data(model.index(0, 1)).isValid());
+        QVERIFY(!model.data(model.index(0, 9)).isValid()); // Char panel
+        QVERIFY(!model.data(model.index(0, 17)).isValid()); // Bin panel
+    }
+
+    void reloadClearsState() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00\x00", 2));
+        EditorModel model(buf);
+
+        // Set state
+        model.setHighlightedByte(1);
+        model.setSearchMatches({0}, 0, 1);
+        
+        // Ensure background color shows match is set
+        QVariant bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        QVERIFY(bg.isValid());
+
+        // Reload
+        model.reload();
+
+        // Background should be default (matches and highlight cleared)
+        bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        QVERIFY(!bg.isValid());
+        bg = model.data(model.index(0, 1), Qt::BackgroundRole);
+        QVERIFY(!bg.isValid());
+    }
+
     void visualRoles() {
         ByteBuffer buf;
         buf.load(QByteArray("\x00\x01", 2));

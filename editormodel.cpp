@@ -11,8 +11,7 @@ EditorModel::EditorModel(ByteBuffer &buffer, QObject *parent)
 int EditorModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid()) return 0;
     if (m_buffer.size() == 0) return 0;
-    // The number of rows should be the number of bytes in the file,
-    // factored into our bytes-per-row limit.
+    // The number of rows is the number of bytes in the file, factored into our bytes-per-row limit.
     return (m_buffer.size() + Constants::BYTES_PER_ROW - 1) / Constants::BYTES_PER_ROW;
 }
 
@@ -23,8 +22,10 @@ int EditorModel::columnCount(const QModelIndex &parent) const {
 }
 
 EditorModel::Panel EditorModel::panelForColumn(int col) {
-    if (col < Constants::BYTES_PER_ROW)                return Panel::Hex;
-    if (col < Constants::BYTES_PER_ROW * 2)            return Panel::Char;
+    if (col < Constants::BYTES_PER_ROW)
+        return Panel::Hex;
+    if (col < Constants::BYTES_PER_ROW * 2)
+        return Panel::Char;
     return Panel::Bin;
 }
 
@@ -39,7 +40,7 @@ QVariant EditorModel::formatByte(quint8 byte, Panel panel) const {
     case Panel::Hex:
         return QString::asprintf("%02X", byte);
     case Panel::Char:
-        // Printable ASCII: 0x20–0x7E; everything else is invalid
+        // Printable ASCII: 0x20–0x7E; for everything else, we return an invalid output
         return (byte >= 0x20 && byte <= 0x7E)
                    ? QString(QChar(byte))
                    : QVariant();
@@ -67,7 +68,7 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
     }
 
     if (role == Qt::TextAlignmentRole)
-        return Qt::AlignCenter;
+        return Qt::AlignCenter; // Center-align each cell
 
     if (role == Qt::BackgroundRole) {
         // Background colouring priority:
@@ -113,7 +114,8 @@ QVariant EditorModel::headerData(int section, Qt::Orientation orientation, int r
 
     if (orientation == Qt::Vertical) {
         // Row header shows the byte offset of the first byte in that row
-        return QString("0x%1").arg(section * Constants::BYTES_PER_ROW, 4, 16, QChar('0')).toUpper();
+        QString hexOffset = QString::number(section * Constants::BYTES_PER_ROW, 16).toUpper().rightJustified(8, '0');
+        return QString("0x%1").arg(hexOffset);
     }
 
     return {};
@@ -121,8 +123,10 @@ QVariant EditorModel::headerData(int section, Qt::Orientation orientation, int r
 
 Qt::ItemFlags EditorModel::flags(const QModelIndex &index) const {
     if (!index.isValid()) return Qt::NoItemFlags;
+    // For cells that are past the file contents, return no flags, so they can't be edited or interacted with.
     int byteIdx = byteIndex(index.row(), index.column());
     if (byteIdx >= m_buffer.size()) return Qt::NoItemFlags;
+
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
@@ -130,6 +134,8 @@ bool EditorModel::parseEdit(const QString &text, Panel panel, quint8 &outByte) c
     bool ok = false;
     QString trimmed = text.trimmed();
 
+    // Validate that the input matches the constraints of its panel.
+    // If it passes, set outByte to the parsed byte for the ByteBuffer
     switch (panel) {
     case Panel::Hex: {
         uint val = trimmed.toUInt(&ok, 16);
@@ -137,7 +143,7 @@ bool EditorModel::parseEdit(const QString &text, Panel panel, quint8 &outByte) c
         return false;
     }
     case Panel::Char: {
-        // Do not trim here, to allow entering space character
+        // In the CHAR panel, we use the untrimmed text, to allow entering space character
         if (text.size() == 1) {
             outByte = static_cast<quint8>(text[0].toLatin1());
             return true;
@@ -161,7 +167,7 @@ bool EditorModel::setData(const QModelIndex &index, const QVariant &value, int r
 
     quint8 newByte;
     if (!parseEdit(value.toString(), panelForColumn(index.column()), newByte))
-        return false; // TODO Add visual feedback for invalid edits
+        return false;
 
     m_buffer.setByte(byteIdx, newByte);
 

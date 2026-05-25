@@ -29,7 +29,7 @@ private slots:
         // Verify successful load
         QCOMPARE(window->m_stackedWidget->currentIndex(), 1);
         QCOMPARE(window->m_stackedWidget->currentWidget(), window->m_tableView);
-        QCOMPARE(window->windowTitle(), QString("%1 (4 bytes) — Hex Editor").arg(QFileInfo(tmp.fileName()).fileName()));
+        QCOMPARE(window->windowTitle(), QString("%1 (4 bytes) — Hex Editor").arg(tmp.fileName()));
     }
 };
 

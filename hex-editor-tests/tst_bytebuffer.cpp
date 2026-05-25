@@ -71,6 +71,37 @@ private slots:
         buf.load(original);
         QCOMPARE(buf.rawData(), original);
     }
+
+    void rawDataReflectsModifications() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00\x00", 2));
+        buf.setByte(0, 0xFF);
+        QByteArray expected("\xFF\x00", 2);
+        QCOMPARE(buf.rawData(), expected);
+    }
+
+    void sizeEmptyOnInit() {
+        ByteBuffer buf;
+        QCOMPARE(buf.size(), 0);
+    }
+
+    void modifiedInitiallyFalse() {
+        ByteBuffer buf;
+        QVERIFY(!buf.isModified());
+        QVERIFY(buf.modifiedIndices().isEmpty());
+    }
+
+    void multipleModifiedIndices() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00\x00\x00", 3));
+        buf.setByte(0, 0x11);
+        buf.setByte(2, 0x33);
+        
+        QSet<int> expected;
+        expected.insert(0);
+        expected.insert(2);
+        QCOMPARE(buf.modifiedIndices(), expected);
+    }
 };
 
 QTEST_MAIN(ByteBufferTest)

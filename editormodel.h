@@ -52,8 +52,14 @@ public:
      */
     int byteIndex(int row, int col) const;
 
+    /*
+     * Set the byte that is currently selected in the UI.
+     */
     void setHighlightedByte(int byteIndex);
 
+    /*
+     * Set the locations that match the current set text.
+     */
     void setSearchMatches(const QList<int> &matches, int current, int matchLength);
 
 private:
@@ -61,15 +67,31 @@ private:
      * Format a byte for display in the UI
      */
     QVariant formatByte(quint8 byte, Panel panel) const;
+
     /*
      * Validate and parse an incoming edit, based on the panel it was done in.
      */
     bool parseEdit(const QString &text, Panel panel, quint8 &outByte) const;
 
     ByteBuffer &m_buffer;
+
+    /*
+     * Currently selected byte
+     */
     int m_highlightedByte = -1;
 
-    QList<int> m_searchMatches; // List of byte indices of matches
-    int        m_currentMatch = -1; // Byte index of current match
-    int        m_matchLength = 0; // Length of the search string
+    /*
+     * List of byte indices of matches
+     */
+    QList<int> m_searchMatches;
+
+    /*
+     * Byte index of current match
+     */
+    int        m_currentMatch = -1;
+
+    /*
+     * Length of the search string
+     */
+    int        m_matchLength = 0;
 };
