@@ -106,6 +106,70 @@ private slots:
         panel.findPrevious();
         QCOMPARE(panel.m_current, 0);
     }
+
+    void statusLabelUpdates() {
+        ByteBuffer buf;
+        buf.load(QByteArray("X Y X", 5));
+        EditorModel model(buf);
+        FindPanel panel(buf, model);
+
+        panel.m_modeCombo->setCurrentIndex(panel.m_modeCombo->findData(static_cast<int>(EditorModel::Panel::Char)));
+        
+        // Empty text
+        panel.m_input->setText("");
+        QCOMPARE(panel.m_status->text(), QString(""));
+        
+        // Valid text, matches found
+        panel.m_input->setText("X");
+        QCOMPARE(panel.m_status->text(), QString("1 / 2"));
+        panel.findNext();
+        QCOMPARE(panel.m_status->text(), QString("2 / 2"));
+
+        // Valid text, no matches found
+        panel.m_input->setText("Z");
+        QCOMPARE(panel.m_status->text(), QString("No matches"));
+    }
+
+    void clearResults() {
+        ByteBuffer buf;
+        buf.load(QByteArray("Hello", 5));
+        EditorModel model(buf);
+        FindPanel panel(buf, model);
+
+        panel.m_modeCombo->setCurrentIndex(panel.m_modeCombo->findData(static_cast<int>(EditorModel::Panel::Char)));
+        panel.m_input->setText("Hello");
+
+        QCOMPARE(panel.m_matches.size(), 1);
+        QVERIFY(!panel.m_input->text().isEmpty());
+
+        // Invoke the clearResults private slot via Qt's meta-object system
+        QMetaObject::invokeMethod(&panel, "clearResults");
+
+        QCOMPARE(panel.m_matches.size(), 0);
+        QCOMPARE(panel.m_current, -1);
+        QVERIFY(panel.m_input->text().isEmpty());
+    }
+
+    void requestScrollSignalFires() {
+        ByteBuffer buf;
+        buf.load(QByteArray("test_data", 9));
+        EditorModel model(buf);
+        FindPanel panel(buf, model);
+
+        QSignalSpy spy(&panel, &FindPanel::requestScrollToRow);
+
+        panel.m_modeCombo->setCurrentIndex(panel.m_modeCombo->findData(static_cast<int>(EditorModel::Panel::Char)));
+        panel.m_input->setText("data");
+
+        // The text change immediately triggers a search and emits requestScrollToRow for the first match
+        QCOMPARE(spy.count(), 1);
+        QList<QVariant> arguments = spy.takeFirst();
+        QCOMPARE(arguments.at(0).toInt(), 0); // "data" starts at index 5, which is row 0
+
+        // findNext should emit it again
+        panel.findNext();
+        QCOMPARE(spy.count(), 1);
+    }
 };
 
 QTEST_MAIN(FindPanelTest)

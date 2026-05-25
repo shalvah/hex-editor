@@ -32,13 +32,30 @@ signals:
     void requestScrollToRow(int row);
 
 private slots:
+    /*
+     * Rerun the search, advancing the current match to the next occurrence.
+     */
     void findNext();
+    /*
+     * Rerun the search, advancing the current match to the previous occurrence.
+     */
     void findPrevious();
+    /*
+     * Clear search results.
+     */
     void clearResults();
 
 private:
+    /*
+     * Given some search text and the search mode (Hex/Char/Bin), find all matches,
+     * reporting the length of the match in outMatchLength.
+     */
     QList<int> search(const QString &text, EditorModel::Panel mode, int &outMatchLength) const;
-    void updateStatus();
+
+    /*
+     * Update the status label ("x/N", "No matches"), based on the current match details.
+     */
+    void updateStatusLabel();
 
     ByteBuffer   &m_buffer;
     EditorModel  &m_model;
@@ -50,9 +67,9 @@ private:
     /*
      * Byte indices of starting locations for each match
      */
-    QList<int>    m_matches;
+    QList<int> m_matches;
     /*
      * Index of the currently selected match (in m_matches array, not in the ByteBuffer)
      */
-    int           m_current = -1;
+    int m_current = -1;
 };

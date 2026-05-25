@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QKeyEvent>
+#include <QShortcut>
 
 FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
     : QWidget(parent), m_buffer(buffer), m_model(model)
@@ -48,7 +49,7 @@ FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
         m_matches = search(m_input->text(), mode, matchLength);
         m_current = m_matches.isEmpty() ? -1 : 0;
         m_model.setSearchMatches(m_matches, m_current, matchLength);
-        updateStatus();
+        updateStatusLabel();
         if (!m_matches.isEmpty())
             emit requestScrollToRow(m_matches[0] / Constants::BYTES_PER_ROW);
     });
@@ -58,15 +59,19 @@ FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
         m_input->textChanged(m_input->text());
     });
 
-    connect(m_input, &QLineEdit::returnPressed, this, &FindPanel::findNext);
-
+    // Set up "Previous" and "Next" buttons
     connect(prevBtn,  &QPushButton::clicked, this, &FindPanel::findPrevious);
     connect(nextBtn,  &QPushButton::clicked, this, &FindPanel::findNext);
+    // Bind Enter key to "Next"
+    connect(m_input, &QLineEdit::returnPressed, this, &FindPanel::findNext);
+    // Set up "Close" button
     connect(closeBtn, &QPushButton::clicked, this, &FindPanel::clearResults);
     connect(closeBtn, &QPushButton::clicked, this, [this](){
         if (parentWidget()) parentWidget()->hide();
         hide();
     });
+    // Bind Esc key to "Close" button
+    connect(new QShortcut(Qt::Key_Escape, this), &QShortcut::activated, closeBtn, &QPushButton::click);
 }
 
 void FindPanel::activate() {
@@ -85,7 +90,7 @@ void FindPanel::findNext() {
     search(m_input->text(), mode, matchLength);
     
     m_model.setSearchMatches(m_matches, m_current, matchLength);
-    updateStatus();
+    updateStatusLabel();
     emit requestScrollToRow(m_matches[m_current] / Constants::BYTES_PER_ROW);
 }
 
@@ -98,7 +103,7 @@ void FindPanel::findPrevious() {
     search(m_input->text(), mode, matchLength);
     
     m_model.setSearchMatches(m_matches, m_current, matchLength);
-    updateStatus();
+    updateStatusLabel();
     emit requestScrollToRow(m_matches[m_current] / Constants::BYTES_PER_ROW);
 }
 
@@ -107,10 +112,10 @@ void FindPanel::clearResults() {
     m_current = -1;
     m_model.setSearchMatches({}, -1, 0);
     m_input->clear();
-    updateStatus();
+    updateStatusLabel();
 }
 
-void FindPanel::updateStatus() {
+void FindPanel::updateStatusLabel() {
     if (m_matches.isEmpty()) {
         m_status->setText(m_input->text().isEmpty() ? "" : "No matches");
         m_status->setStyleSheet("color: red;");
