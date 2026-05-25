@@ -15,6 +15,7 @@ qt_add_executable(hex-editor
     bytebuffer.h bytebuffer.cpp
     filemanager.h filemanager.cpp
     constants.h
+    editormodel.h editormodel.cpp
 )
 
 target_link_libraries(hex-editor
