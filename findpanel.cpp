@@ -57,6 +57,8 @@ FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
         m_input->textChanged(m_input->text());
     });
 
+    connect(m_input, &QLineEdit::returnPressed, this, &FindPanel::findNext);
+
     connect(prevBtn,  &QPushButton::clicked, this, &FindPanel::findPrevious);
     connect(nextBtn,  &QPushButton::clicked, this, &FindPanel::findNext);
     connect(closeBtn, &QPushButton::clicked, this, &FindPanel::clearResults);
