@@ -2,8 +2,8 @@
 #include <QMainWindow>
 #include "bytebuffer.h"
 #include "editormodel.h"
+#include "editorview.h"
 
-class QTableView;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -16,5 +16,5 @@ private:
 
     ByteBuffer  m_buffer;
     EditorModel m_model;
-    QTableView *m_tableView = nullptr;
+    EditorView *m_tableView = nullptr;
 };

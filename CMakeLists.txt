@@ -16,6 +16,7 @@ qt_add_executable(hex-editor
     filemanager.h filemanager.cpp
     constants.h
     editormodel.h editormodel.cpp
+    editorview.h editorview.cpp
 )
 
 target_link_libraries(hex-editor
