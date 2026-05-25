@@ -121,8 +121,9 @@ bool EditorModel::parseEdit(const QString &text, Panel panel, quint8 &outByte) c
         return false;
     }
     case Panel::Char: {
-        if (trimmed.size() == 1) {
-            outByte = static_cast<quint8>(trimmed[0].toLatin1());
+        // Do not trim here, to allow entering space character
+        if (text.size() == 1) {
+            outByte = static_cast<quint8>(text[0].toLatin1());
             return true;
         }
         return false;

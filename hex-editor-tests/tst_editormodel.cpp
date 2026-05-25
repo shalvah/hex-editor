@@ -94,11 +94,8 @@ private slots:
         EditorModel model(buf);
         bool result = model.setData(model.index(0, 8), " ", Qt::EditRole);
         
-        // This test might currently fail due to the bug mentioned earlier, 
-        // but it acts as a regression test once the bug is fixed.
-        // Uncomment/Modify these when the bug is fixed:
-        // QVERIFY(result);
-        // QCOMPARE(buf.byteAt(0), quint8(' '));
+        QVERIFY(result);
+        QCOMPARE(buf.byteAt(0), quint8(' '));
     }
 
     void outOfBoundsPrintableCharactersRenderAsDot() {

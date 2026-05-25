@@ -8,8 +8,11 @@ class QLineEdit;
 class QLabel;
 class QComboBox;
 
+class FindPanelTest;
+
 class FindPanel : public QWidget {
     Q_OBJECT
+    friend class FindPanelTest;
 
 public:
     explicit FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent = nullptr);

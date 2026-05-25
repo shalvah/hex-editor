@@ -11,6 +11,7 @@ public:
         NoPermission,
         TooLarge,
         ReadFailed,
+        CouldNotOpenFileForWriting,
         WriteFailed,
     };
 

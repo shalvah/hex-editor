@@ -2,6 +2,7 @@
 #include "bytebuffer.h"
 #include "constants.h"
 #include <QFile>
+#include <QSaveFile>
 #include <QFileInfo>
 
 QString FileManager::errorMessage(Error error) {
@@ -12,6 +13,7 @@ QString FileManager::errorMessage(Error error) {
     case Error::TooLarge:    return "File exceeds 100 MB limit";
     case Error::ReadFailed:  return "Failed to read file";
     case Error::WriteFailed: return "Failed to write file";
+    case Error::CouldNotOpenFileForWriting: return "Could not open file for writing";
     }
     return "Unknown error";
 }
@@ -37,13 +39,24 @@ FileManager::Error FileManager::loadFile(const QString &path, ByteBuffer &buffer
 }
 
 FileManager::Error FileManager::saveFile(const QString &path, ByteBuffer &buffer) {
-    QFile file(path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-        return Error::WriteFailed;
+    QSaveFile file(path);
+    // On Windows, QSaveFile might fail to overwrite files if they are in use by other
+    // processes (like antivirus) or if they are QTemporaryFiles.
+    // Fallback to direct write, since user changes should take precedence.
+    file.setDirectWriteFallback(true);
+    
+    if (!file.open(QIODevice::WriteOnly))
+        return Error::CouldNotOpenFileForWriting;
 
     qint64 written = file.write(buffer.rawData());
-    if (written != buffer.rawData().size())
+    if (written != buffer.rawData().size()) {
+        file.cancelWriting();
         return Error::WriteFailed;
+    }
+
+    if (!file.commit()) {
+        return Error::WriteFailed;
+    }
 
     buffer.clearModified();
     return Error::None;

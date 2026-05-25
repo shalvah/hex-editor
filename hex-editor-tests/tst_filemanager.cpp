@@ -1,5 +1,7 @@
 #include <QtTest>
 #include <QTemporaryFile>
+#include <QDir>
+#include <QUuid>
 #include "../filemanager.h"
 #include "../bytebuffer.h"
 #include "../constants.h"
@@ -16,9 +18,11 @@ private slots:
     }
 
     void loadAndSaveRoundtrip() {
-        // Write known bytes to a temp file
-        QTemporaryFile tmp;
-        QVERIFY(tmp.open());
+        // Create a temporary file path manually, as QTemporaryFile creates files with
+        // an exclusive lock on Windows, which causes QSaveFile to fail during commit.
+        QString tempPath = QDir::tempPath() + "/hex_test_" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".bin";
+        QFile tmp(tempPath);
+        QVERIFY(tmp.open(QIODevice::WriteOnly));
         QByteArray original("\x11\x22\x33\x44", 4);
         tmp.write(original);
         tmp.close();
@@ -26,7 +30,7 @@ private slots:
         // Load into buffer
         FileManager fm;
         ByteBuffer buf;
-        auto loadErr = fm.loadFile(tmp.fileName(), buf);
+        auto loadErr = fm.loadFile(tempPath, buf);
         QCOMPARE(loadErr, FileManager::Error::None);
         QCOMPARE(buf.rawData(), original);
         QVERIFY(!buf.isModified());
@@ -34,15 +38,18 @@ private slots:
         // Modify and save
         buf.setByte(0, 0xFF);
         QVERIFY(buf.isModified());
-        auto saveErr = fm.saveFile(tmp.fileName(), buf);
+
+        auto saveErr = fm.saveFile(tempPath, buf);
         QCOMPARE(saveErr, FileManager::Error::None);
         QVERIFY(!buf.isModified()); // cleared after save
 
         // Reload and verify
         ByteBuffer buf2;
-        fm.loadFile(tmp.fileName(), buf2);
+        fm.loadFile(tempPath, buf2);
         QCOMPARE(buf2.byteAt(0), quint8(0xFF));
         QCOMPARE(buf2.byteAt(1), quint8(0x22)); // unchanged
+
+        QFile::remove(tempPath);
     }
 
     void loadEmptyFile() {

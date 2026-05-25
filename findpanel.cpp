@@ -117,23 +117,30 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode) const
     const QString trimmed = text.trimmed();
 
     if (mode == EditorModel::Panel::Hex) {
-        // Split on whitespace so "FF 0A" or "FF0A" both work
-        const QStringList tokens = trimmed.split(QRegularExpression("\\s+"),
-                                                 Qt::SkipEmptyParts);
-        for (const QString &token : tokens) {
+        // Remove all whitespace to support both "FF 0A" and "FF0A"
+        QString hexString = text;
+        hexString.remove(QRegularExpression("\\s+"));
+        
+        // Ensure even number of characters
+        if (hexString.length() % 2 != 0) return {};
+        
+        for (int i = 0; i < hexString.length(); i += 2) {
             bool ok;
-            uint val = token.toUInt(&ok, 16);
+            uint val = hexString.mid(i, 2).toUInt(&ok, 16);
             if (!ok || val > 0xFF) return {}; // invalid input
             needle.append(static_cast<char>(val));
         }
     } else if (mode == EditorModel::Panel::Char) {
         needle = trimmed.toLatin1();
     } else { // Bin
-        const QStringList tokens = trimmed.split(QRegularExpression("\\s+"),
-                                                 Qt::SkipEmptyParts);
-        for (const QString &token : tokens) {
+        QString binString = text;
+        binString.remove(QRegularExpression("\\s+"));
+        
+        if (binString.length() % 8 != 0) return {};
+
+        for (int i = 0; i < binString.length(); i += 8) {
             bool ok;
-            uint val = token.toUInt(&ok, 2);
+            uint val = binString.mid(i, 8).toUInt(&ok, 2);
             if (!ok || val > 0xFF) return {};
             needle.append(static_cast<char>(val));
         }

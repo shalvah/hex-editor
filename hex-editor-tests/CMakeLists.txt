@@ -30,3 +30,15 @@ add_executable(EditorModelTest tst_editormodel.cpp ../editormodel.cpp ../bytebuf
 add_test(NAME EditorModelTest COMMAND EditorModelTest)
 target_link_libraries(EditorModelTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui)
 
+add_executable(FindPanelTest tst_findpanel.cpp ../findpanel.cpp ../editormodel.cpp ../bytebuffer.cpp)
+add_test(NAME FindPanelTest COMMAND FindPanelTest)
+target_link_libraries(FindPanelTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets)
+
+add_executable(EditorViewTest tst_editorview.cpp ../editorview.cpp ../editormodel.cpp ../bytebuffer.cpp)
+add_test(NAME EditorViewTest COMMAND EditorViewTest)
+target_link_libraries(EditorViewTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets)
+
+add_executable(MainWindowTest tst_mainwindow.cpp ../mainwindow.cpp ../findpanel.cpp ../editorview.cpp ../editormodel.cpp ../bytebuffer.cpp ../filemanager.cpp)
+add_test(NAME MainWindowTest COMMAND MainWindowTest)
+target_link_libraries(MainWindowTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets)
+
