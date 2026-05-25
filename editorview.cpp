@@ -88,13 +88,10 @@ void EditorView::applyColumnWidths() {
 
     for (int col = 0; col < Constants::TOTAL_COLUMNS; ++col) {
         auto panel = EditorModel::panelForColumn(col);
-        // CHAR columns display only one character, so need only a little space.
-        // HEX columns display two, so need a little more space.
-        // BIN columns display 6, so we give them much more space.
         switch (panel) {
-        case EditorModel::Panel::Hex:  setColumnWidth(col, 36); break;
-        case EditorModel::Panel::Char: setColumnWidth(col, 24); break;
-        case EditorModel::Panel::Bin:  setColumnWidth(col, 72); break;
+        case EditorModel::Panel::Char: setColumnWidth(col, Constants::COLUMN_WIDTH_CHAR_PX); break;
+        case EditorModel::Panel::Hex:  setColumnWidth(col, Constants::COLUMN_WIDTH_HEX_PX); break;
+        case EditorModel::Panel::Bin:  setColumnWidth(col, Constants::COLUMN_WIDTH_BIN_PX); break;
         }
     }
 }

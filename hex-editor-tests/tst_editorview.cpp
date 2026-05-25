@@ -3,6 +3,7 @@
 #include "../editorview.h"
 #include "../editormodel.h"
 #include "../bytebuffer.h"
+#include "../constants.h"
 
 class EditorViewTest : public QObject {
     Q_OBJECT
@@ -97,17 +98,17 @@ private slots:
         
         view.setEditorModel(&model);
         
-        // Hex columns (0-7) should be 36px
-        QCOMPARE(view.columnWidth(0), 36);
-        QCOMPARE(view.columnWidth(7), 36);
+        // Hex columns (0-7)
+        QCOMPARE(view.columnWidth(0), Constants::COLUMN_WIDTH_HEX_PX);
+        QCOMPARE(view.columnWidth(7), Constants::COLUMN_WIDTH_HEX_PX);
         
-        // Char columns (8-15) should be 24px
-        QCOMPARE(view.columnWidth(8), 24);
-        QCOMPARE(view.columnWidth(15), 24);
+        // Char columns (8-15)
+        QCOMPARE(view.columnWidth(8), Constants::COLUMN_WIDTH_CHAR_PX);
+        QCOMPARE(view.columnWidth(15), Constants::COLUMN_WIDTH_CHAR_PX);
         
-        // Bin columns (16-23) should be 72px
-        QCOMPARE(view.columnWidth(16), 72);
-        QCOMPARE(view.columnWidth(23), 72);
+        // Bin columns (16-23)
+        QCOMPARE(view.columnWidth(16), Constants::COLUMN_WIDTH_BIN_PX);
+        QCOMPARE(view.columnWidth(23), Constants::COLUMN_WIDTH_BIN_PX);
     }
 
     void viewSelectionUpdatesHighlight() {
