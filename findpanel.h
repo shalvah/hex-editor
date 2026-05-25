@@ -31,7 +31,7 @@ private slots:
     void clearResults();
 
 private:
-    QList<int> search(const QString &text, EditorModel::Panel mode) const;
+    QList<int> search(const QString &text, EditorModel::Panel mode, int &outMatchLength) const;
     void updateStatus();
 
     ByteBuffer   &m_buffer;

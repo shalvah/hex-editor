@@ -54,7 +54,7 @@ public:
 
     void setHighlightedByte(int byteIndex);
 
-    void setSearchMatches(const QList<int> &matches, int current);
+    void setSearchMatches(const QList<int> &matches, int current, int matchLength);
 
 private:
     /*
@@ -71,4 +71,5 @@ private:
 
     QList<int> m_searchMatches; // List of byte indices of matches
     int        m_currentMatch = -1; // Byte index of current match
+    int        m_matchLength = 0; // Length of the search string
 };

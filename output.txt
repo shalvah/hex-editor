@@ -1,0 +1,17 @@
+********* Start testing of EditorModelTest *********
+Config: Using QtTest library 6.10.2, Qt 6.10.2 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+PASS   : EditorModelTest::initTestCase()
+PASS   : EditorModelTest::rowAndColumnCountFollowsBytesPerRow()
+PASS   : EditorModelTest::emptyBufferHasNoRows()
+PASS   : EditorModelTest::panelsRenderWithProperFormatting()
+PASS   : EditorModelTest::nonPrintableCharactersRenderAsDotInCharPanel()
+PASS   : EditorModelTest::setDataPerPanel()
+PASS   : EditorModelTest::setDataSyncsPanels()
+PASS   : EditorModelTest::setDataInvalidInputRejected()
+PASS   : EditorModelTest::setDataWhitespaceInChar()
+PASS   : EditorModelTest::outOfBoundsPrintableCharactersRenderAsDot()
+PASS   : EditorModelTest::byteIndexMapping()
+PASS   : EditorModelTest::visualRoles()
+PASS   : EditorModelTest::cleanupTestCase()
+Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 4ms
+********* Finished testing of EditorModelTest *********

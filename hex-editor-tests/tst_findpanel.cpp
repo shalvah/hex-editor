@@ -16,13 +16,16 @@ private slots:
         EditorModel model(buf);
         FindPanel panel(buf, model);
 
-        QList<int> matches = panel.search("12 34", EditorModel::Panel::Hex);
+        int matchLength = 0;
+        QList<int> matches = panel.search("12 34", EditorModel::Panel::Hex, matchLength);
         QCOMPARE(matches, QList<int>({0, 5}));
+        QCOMPARE(matchLength, 2);
 
-        matches = panel.search("ABCD", EditorModel::Panel::Hex); // Continuous
+        matches = panel.search("ABCD", EditorModel::Panel::Hex, matchLength); // Continuous
         QCOMPARE(matches, QList<int>({2}));
+        QCOMPARE(matchLength, 2);
 
-        matches = panel.search("FF", EditorModel::Panel::Hex);
+        matches = panel.search("FF", EditorModel::Panel::Hex, matchLength);
         QCOMPARE(matches, QList<int>());
     }
 
@@ -32,13 +35,16 @@ private slots:
         EditorModel model(buf);
         FindPanel panel(buf, model);
 
-        QList<int> matches = panel.search("Hello", EditorModel::Panel::Char);
+        int matchLength = 0;
+        QList<int> matches = panel.search("Hello", EditorModel::Panel::Char, matchLength);
         QCOMPARE(matches, QList<int>({0, 12}));
+        QCOMPARE(matchLength, 5);
 
-        matches = panel.search("World", EditorModel::Panel::Char);
+        matches = panel.search("World", EditorModel::Panel::Char, matchLength);
         QCOMPARE(matches, QList<int>({6}));
+        QCOMPARE(matchLength, 5);
 
-        matches = panel.search("xyz", EditorModel::Panel::Char);
+        matches = panel.search("xyz", EditorModel::Panel::Char, matchLength);
         QCOMPARE(matches, QList<int>());
     }
 
@@ -49,11 +55,14 @@ private slots:
         EditorModel model(buf);
         FindPanel panel(buf, model);
 
-        QList<int> matches = panel.search("10101010", EditorModel::Panel::Bin);
+        int matchLength = 0;
+        QList<int> matches = panel.search("10101010", EditorModel::Panel::Bin, matchLength);
         QCOMPARE(matches, QList<int>({0, 2}));
+        QCOMPARE(matchLength, 1);
 
-        matches = panel.search("01010101", EditorModel::Panel::Bin);
+        matches = panel.search("01010101", EditorModel::Panel::Bin, matchLength);
         QCOMPARE(matches, QList<int>({1}));
+        QCOMPARE(matchLength, 1);
     }
 
     void searchInvalidInputsReturnsEmpty() {
@@ -62,16 +71,17 @@ private slots:
         EditorModel model(buf);
         FindPanel panel(buf, model);
 
+        int matchLength = 0;
         // Invalid hex
-        QCOMPARE(panel.search("XX", EditorModel::Panel::Hex), QList<int>());
-        QCOMPARE(panel.search("123", EditorModel::Panel::Hex), QList<int>());
+        QCOMPARE(panel.search("XX", EditorModel::Panel::Hex, matchLength), QList<int>());
+        QCOMPARE(panel.search("123", EditorModel::Panel::Hex, matchLength), QList<int>());
 
         // Invalid bin
-        QCOMPARE(panel.search("102", EditorModel::Panel::Bin), QList<int>());
-        QCOMPARE(panel.search("999", EditorModel::Panel::Bin), QList<int>());
+        QCOMPARE(panel.search("102", EditorModel::Panel::Bin, matchLength), QList<int>());
+        QCOMPARE(panel.search("999", EditorModel::Panel::Bin, matchLength), QList<int>());
     }
 
-    void navigationCycling() {
+    void nextAndPreviousCycling() {
         ByteBuffer buf;
         buf.load(QByteArray("A B A", 5));
         EditorModel model(buf);

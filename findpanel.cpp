@@ -44,9 +44,10 @@ FindPanel::FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent)
     // Search as you type
     connect(m_input, &QLineEdit::textChanged, this, [this]() {
         auto mode = static_cast<EditorModel::Panel>(m_modeCombo->currentData().toInt());
-        m_matches = search(m_input->text(), mode);
+        int matchLength = 0;
+        m_matches = search(m_input->text(), mode, matchLength);
         m_current = m_matches.isEmpty() ? -1 : 0;
-        m_model.setSearchMatches(m_matches, m_current);
+        m_model.setSearchMatches(m_matches, m_current, matchLength);
         updateStatus();
         if (!m_matches.isEmpty())
             emit requestScrollToRow(m_matches[0] / Constants::BYTES_PER_ROW);
@@ -78,7 +79,12 @@ void FindPanel::activate() {
 void FindPanel::findNext() {
     if (m_matches.isEmpty()) return;
     m_current = (m_current + 1) % m_matches.size();
-    m_model.setSearchMatches(m_matches, m_current);
+    
+    int matchLength = 0;
+    auto mode = static_cast<EditorModel::Panel>(m_modeCombo->currentData().toInt());
+    search(m_input->text(), mode, matchLength);
+    
+    m_model.setSearchMatches(m_matches, m_current, matchLength);
     updateStatus();
     emit requestScrollToRow(m_matches[m_current] / Constants::BYTES_PER_ROW);
 }
@@ -86,7 +92,12 @@ void FindPanel::findNext() {
 void FindPanel::findPrevious() {
     if (m_matches.isEmpty()) return;
     m_current = (m_current - 1 + m_matches.size()) % m_matches.size();
-    m_model.setSearchMatches(m_matches, m_current);
+    
+    int matchLength = 0;
+    auto mode = static_cast<EditorModel::Panel>(m_modeCombo->currentData().toInt());
+    search(m_input->text(), mode, matchLength);
+    
+    m_model.setSearchMatches(m_matches, m_current, matchLength);
     updateStatus();
     emit requestScrollToRow(m_matches[m_current] / Constants::BYTES_PER_ROW);
 }
@@ -94,7 +105,7 @@ void FindPanel::findPrevious() {
 void FindPanel::clearResults() {
     m_matches.clear();
     m_current = -1;
-    m_model.setSearchMatches({}, -1);
+    m_model.setSearchMatches({}, -1, 0);
     m_input->clear();
     updateStatus();
 }
@@ -109,7 +120,8 @@ void FindPanel::updateStatus() {
     }
 }
 
-QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode) const {
+QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode, int &outMatchLength) const {
+    outMatchLength = 0;
     if (text.trimmed().isEmpty()) return {};
 
     // Convert search text to a byte sequence based on mode
@@ -147,6 +159,7 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode) const
     }
 
     if (needle.isEmpty()) return {};
+    outMatchLength = needle.length();
 
     // Naive search — optimized to prevent allocations
     QList<int> results;

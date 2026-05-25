@@ -129,24 +129,28 @@ private slots:
         // Default background
         QCOMPARE(model.data(model.index(0, 0), Qt::BackgroundRole), QVariant());
 
-        // Modified background
+        // Background should change on modification
         buf.setByte(0, 0xFF);
         QVariant bg = model.data(model.index(0, 0), Qt::BackgroundRole);
         QVERIFY(bg.isValid());
         QCOMPARE(bg.value<QColor>(), QColor(0x66, 0x5D, 0x29));
 
-        // Highlighted background
+        // Background should change on selecting/highlighting a cell
         model.setHighlightedByte(0);
         bg = model.data(model.index(0, 0), Qt::BackgroundRole);
         // Since highlight takes precedence over modified in our logic:
         QVERIFY(bg.isValid());
         
-        // Search Match
+        // Background should change for search matches
         model.setHighlightedByte(-1); // clear
-        model.setSearchMatches({1}, 0);
-        bg = model.data(model.index(0, 1), Qt::BackgroundRole);
+        model.setSearchMatches({0, 1}, 0, 1);
+        bg = model.data(model.index(0, 0), Qt::BackgroundRole);
         QVERIFY(bg.isValid());
         QCOMPARE(bg.value<QColor>(), QColor(0xFF, 0x80, 0x00)); // current match color
+
+        bg = model.data(model.index(0, 1), Qt::BackgroundRole);
+        QVERIFY(bg.isValid());
+        QCOMPARE(bg.value<QColor>(), QColor(0xFF, 0xD0, 0x80)); // other match color
     }
 };
 

@@ -70,17 +70,33 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
         return Qt::AlignCenter;
 
     if (role == Qt::BackgroundRole) {
-        if (m_buffer.modifiedIndices().contains(byteIdx))
-            return QColor(0x66, 0x5D, 0x29); // yellow — modified
-        if (byteIdx == m_currentMatch)
-            return QColor(0xFF, 0x80, 0x00); // orange — current match
-        if (m_searchMatches.contains(byteIdx))
-            return QColor(0xFF, 0xD0, 0x80); // light orange — other matches
+        // Background colouring priority:
+        // 1. Colour cell <current accent colour> if currently selected (mouse click or keyboard).
+        //   We do this so we can sync the current selection across panels.
         if (byteIdx == m_highlightedByte) {
-             // Set accent colour on currently highlighted cell, so we can sync to other panels
             QPalette palette = QGuiApplication::palette();
             return palette.color(QPalette::Highlight);
         }
+
+        // 2. Colour cell <orange> if it's the currently selected match from a search.
+        if (m_currentMatch != -1 && byteIdx >= m_currentMatch && byteIdx < m_currentMatch + m_matchLength)
+            return QColor(0xFF, 0x80, 0x00);
+            
+        bool inOtherMatch = false;
+        for (int matchIdx : m_searchMatches) {
+            if (byteIdx >= matchIdx && byteIdx < matchIdx + m_matchLength) {
+                inOtherMatch = true;
+                break;
+            }
+        }
+
+        // 3. Colour cell <light orange> if it's a match, but not the currently selected one.
+        if (inOtherMatch)
+            return QColor(0xFF, 0xD0, 0x80);
+
+        // 4. Colour cell <pale yellow> if it's been modified.
+        if (m_buffer.modifiedIndices().contains(byteIdx))
+            return QColor(0x66, 0x5D, 0x29);
     }
 
     return {};
@@ -172,9 +188,10 @@ void EditorModel::setHighlightedByte(int byteIndex) {
     invalidateRow(byteIndex);
 }
 
-void EditorModel::setSearchMatches(const QList<int> &matches, int current) {
+void EditorModel::setSearchMatches(const QList<int> &matches, int current, int matchLength) {
     m_searchMatches = matches;
     m_currentMatch = (current >= 0 && current < matches.size()) ? matches[current] : -1;
+    m_matchLength = matchLength;
     // Emit dataChanged, forcing rerender of the cells
     emit dataChanged(index(0, 0), index(rowCount() - 1, Constants::TOTAL_COLUMNS - 1));
 }
@@ -185,5 +202,6 @@ void EditorModel::reload() {
     m_highlightedByte = -1;
     m_searchMatches.clear();
     m_currentMatch = -1;
+    m_matchLength = 0;
     endResetModel();
 }
