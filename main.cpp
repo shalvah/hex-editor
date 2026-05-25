@@ -1,18 +1,15 @@
-#include "argumentparser.h"
-#include "mainwindow.h"
-
 #include <QApplication>
-#include <QDebug>
+#include "mainwindow.h"
+#include "argumentparser.h"
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
     QString path = ArgumentParser::parse(argc, argv);
-    qDebug() << "Parsed path:" << path;
+    Q_UNUSED(path) // to be used later
 
-    return 0;
-    // MainWindow w;
-    // w.show();
-    // return QCoreApplication::exec();
+    MainWindow w;
+    w.show();
+
+    return app.exec();
 }

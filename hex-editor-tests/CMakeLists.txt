@@ -4,8 +4,8 @@ project(HexEditorTest LANGUAGES CXX)
 
 enable_testing()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Test)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Test Gui)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test Gui)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -25,4 +25,8 @@ target_link_libraries(ByteBufferTest PRIVATE Qt${QT_VERSION_MAJOR}::Test)
 add_executable(FileManagerTest tst_filemanager.cpp ../filemanager.cpp ../bytebuffer.cpp)
 add_test(NAME FileManagerTest COMMAND FileManagerTest)
 target_link_libraries(FileManagerTest PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+
+add_executable(EditorModelTest tst_editormodel.cpp ../editormodel.cpp ../bytebuffer.cpp)
+add_test(NAME EditorModelTest COMMAND EditorModelTest)
+target_link_libraries(EditorModelTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui)
 

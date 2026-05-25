@@ -1,5 +1,7 @@
 #include "editormodel.h"
 #include "bytebuffer.h"
+#include "constants.h"
+#include <QColor>
 
 EditorModel::EditorModel(ByteBuffer &buffer, QObject *parent)
     : QAbstractTableModel(parent), m_buffer(buffer) {}
@@ -7,24 +9,27 @@ EditorModel::EditorModel(ByteBuffer &buffer, QObject *parent)
 int EditorModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid()) return 0;
     if (m_buffer.size() == 0) return 0;
-    return (m_buffer.size() + BYTES_PER_ROW - 1) / BYTES_PER_ROW;
+    // The number of rows should be the number of bytes in the file,
+    // factored into our bytes-per-row limit.
+    return (m_buffer.size() + Constants::BYTES_PER_ROW - 1) / Constants::BYTES_PER_ROW;
 }
 
 int EditorModel::columnCount(const QModelIndex &parent) const {
     if (parent.isValid()) return 0;
-    return TOTAL_COLUMNS;
+    // Number of columns is always fixed as the bytes per row * no of panels.
+    return Constants::TOTAL_COLUMNS;
 }
 
 EditorModel::Panel EditorModel::panelForColumn(int col) {
-    if (col < BYTES_PER_ROW)                return Panel::Hex;
-    if (col < BYTES_PER_ROW * 2)            return Panel::Char;
+    if (col < Constants::BYTES_PER_ROW)                return Panel::Hex;
+    if (col < Constants::BYTES_PER_ROW * 2)            return Panel::Char;
     return Panel::Bin;
 }
 
 int EditorModel::byteIndex(int row, int col) const {
-    // All three panels map to the same 8 bytes per row
-    int byteCol = col % BYTES_PER_ROW;
-    return row * BYTES_PER_ROW + byteCol;
+    // First take the modulus, since all three panels map to the same N bytes per row
+    int byteCol = col % Constants::BYTES_PER_ROW;
+    return (row * Constants::BYTES_PER_ROW) + byteCol;
 }
 
 QVariant EditorModel::formatByte(quint8 byte, Panel panel) const {
@@ -32,10 +37,10 @@ QVariant EditorModel::formatByte(quint8 byte, Panel panel) const {
     case Panel::Hex:
         return QString("%1").arg(byte, 2, 16, QChar('0')).toUpper();
     case Panel::Char:
-        // Printable ASCII: 0x20–0x7E; everything else shows as a dot
+        // Printable ASCII: 0x20–0x7E; everything else shows as a centre dot (·, U+00B7)
         return (byte >= 0x20 && byte <= 0x7E)
                    ? QString(QChar(byte))
-                   : QString(".");
+                   : QString("·");
     case Panel::Bin:
         return QString("%1").arg(byte, 8, 2, QChar('0'));
     }
@@ -55,7 +60,7 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
         return Qt::AlignCenter;
 
     if (role == Qt::BackgroundRole && m_buffer.modifiedIndices().contains(byteIdx))
-        return QColor(0xFF, 0xF0, 0xA0); // soft yellow for modified bytes
+        return QColor(0x66, 0x5D, 0x29); // soft yellow for modified bytes
 
     return {};
 }
@@ -65,13 +70,13 @@ QVariant EditorModel::headerData(int section, Qt::Orientation orientation, int r
 
     if (orientation == Qt::Horizontal) {
         // Label each column group
-        int byteCol = section % BYTES_PER_ROW;
+        int byteCol = section % Constants::BYTES_PER_ROW;
         return QString::number(byteCol);
     }
 
     if (orientation == Qt::Vertical) {
         // Row header shows the byte offset of the first byte in that row
-        return QString("0x%1").arg(section * BYTES_PER_ROW, 4, 16, QChar('0')).toUpper();
+        return QString("0x%1").arg(section * Constants::BYTES_PER_ROW, 4, 16, QChar('0')).toUpper();
     }
 
     return {};
@@ -118,20 +123,21 @@ bool EditorModel::setData(const QModelIndex &index, const QVariant &value, int r
 
     quint8 newByte;
     if (!parseEdit(value.toString(), panelForColumn(index.column()), newByte))
-        return false;
+        return false; // TODO Add visual feedback for invalid edits
 
     m_buffer.setByte(byteIdx, newByte);
 
     // The same byte appears in 3 columns — invalidate all three panels for this row
     emit dataChanged(
         this->index(index.row(), 0),
-        this->index(index.row(), TOTAL_COLUMNS - 1)
+        this->index(index.row(), Constants::TOTAL_COLUMNS - 1)
         );
 
     return true;
 }
 
 void EditorModel::reload() {
+    // Underlying data has been replaced; inform the view to redraw.
     beginResetModel();
     endResetModel();
 }

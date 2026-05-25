@@ -1,23 +1,20 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
+#pragma once
 #include <QMainWindow>
+#include "bytebuffer.h"
+#include "editormodel.h"
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
+class QTableView;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
 
 private:
-    Ui::MainWindow *ui;
+    void setupTable();
+
+    ByteBuffer  m_buffer;
+    EditorModel m_model;
+    QTableView *m_tableView = nullptr;
 };
-#endif // MAINWINDOW_H
