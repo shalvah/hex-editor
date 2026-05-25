@@ -12,6 +12,7 @@ qt_add_executable(hex-editor
     mainwindow.h
     mainwindow.ui
     argumentparser.h argumentparser.cpp
+    bytebuffer.h bytebuffer.cpp
 )
 
 target_link_libraries(hex-editor

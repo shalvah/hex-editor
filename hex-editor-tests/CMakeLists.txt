@@ -16,6 +16,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(ArgumentParserTest tst_argumentparsertest.cpp ../argumentparser.cpp)
 add_test(NAME ArgumentParserTest COMMAND ArgumentParserTest)
-
 target_link_libraries(ArgumentParserTest PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+
+add_executable(ByteBufferTest tst_bytebuffer.cpp ../bytebuffer.cpp)
+add_test(NAME ByteBufferTest COMMAND ByteBufferTest)
+target_link_libraries(ByteBufferTest PRIVATE Qt${QT_VERSION_MAJOR}::Test)
 
