@@ -8,6 +8,7 @@ qt_standard_project_setup()
 qt_add_executable(hex-editor
     WIN32 MACOSX_BUNDLE
     main.cpp
+    hexeditorapp.h hexeditorapp.cpp
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui

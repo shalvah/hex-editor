@@ -8,10 +8,12 @@
 
 class QStackedWidget;
 class MainWindowTest;
+class HexEditorAppTest;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
     friend class MainWindowTest;
+    friend class HexEditorAppTest;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);

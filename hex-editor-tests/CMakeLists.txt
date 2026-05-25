@@ -42,3 +42,7 @@ add_executable(MainWindowTest tst_mainwindow.cpp ../mainwindow.cpp ../findpanel.
 add_test(NAME MainWindowTest COMMAND MainWindowTest)
 target_link_libraries(MainWindowTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets)
 
+add_executable(HexEditorAppTest tst_hexeditorapp.cpp ../hexeditorapp.cpp ../mainwindow.cpp ../findpanel.cpp ../editorview.cpp ../editormodel.cpp ../bytebuffer.cpp ../filemanager.cpp ../argumentparser.cpp)
+add_test(NAME HexEditorAppTest COMMAND HexEditorAppTest)
+target_link_libraries(HexEditorAppTest PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets)
+

@@ -2,7 +2,6 @@
 #include <QTemporaryFile>
 #include <QStackedWidget>
 #include "../mainwindow.h"
-#include "../editorview.h"
 
 class MainWindowTest : public QObject {
     Q_OBJECT
