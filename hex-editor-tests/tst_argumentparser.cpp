@@ -21,4 +21,4 @@ private slots:
 };
 
 QTEST_MAIN(ArgumentParserTest)
-#include "tst_argumentparsertest.moc"
+#include "tst_argumentparser.moc"
