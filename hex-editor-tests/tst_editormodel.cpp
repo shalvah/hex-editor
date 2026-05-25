@@ -81,6 +81,11 @@ private slots:
         bool result = model.setData(model.index(0, 0), "ZZ", Qt::EditRole);
         QVERIFY(!result);
         QCOMPARE(buf.byteAt(0), quint8(0x00)); // unchanged
+        
+        // Invalid bin
+        result = model.setData(model.index(0, 16), "1234", Qt::EditRole);
+        QVERIFY(!result);
+        QCOMPARE(buf.byteAt(0), quint8(0x00)); // unchanged
     }
 
     void byteIndexMapping() {
@@ -93,6 +98,34 @@ private slots:
         QCOMPARE(model.byteIndex(0, 16), 0); // BIN col 0
         QCOMPARE(model.byteIndex(0, 7),  7); // HEX col 7
         QCOMPARE(model.byteIndex(1, 0),  8); // second row
+    }
+
+    void visualRoles() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x00", 1));
+        EditorModel model(buf);
+        
+        // Default background
+        QCOMPARE(model.data(model.index(0, 0), Qt::BackgroundRole), QVariant());
+
+        // Modified background
+        buf.setByte(0, 0xFF);
+        QVariant bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        QVERIFY(bg.isValid());
+        QCOMPARE(bg.value<QColor>(), QColor(0x66, 0x5D, 0x29));
+
+        // Highlighted background
+        model.setHighlightedByte(0);
+        bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        // Since highlight takes precedence over modified in our logic:
+        QVERIFY(bg.isValid());
+        
+        // Search Match
+        model.setHighlightedByte(-1); // clear
+        model.setSearchMatches({0}, 0);
+        bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        QVERIFY(bg.isValid());
+        QCOMPARE(bg.value<QColor>(), QColor(0xFF, 0x80, 0x00)); // current match color
     }
 };
 

@@ -48,6 +48,14 @@ private slots:
         QVERIFY(!buf.isModified());
     }
 
+    void getByteOutOfBoundsReturnsZero() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x01\x02", 2));
+        QCOMPARE(buf.byteAt(-1), quint8(0));
+        QCOMPARE(buf.byteAt(2), quint8(0));
+        QCOMPARE(buf.byteAt(99), quint8(0));
+    }
+
     void clearModified() {
         ByteBuffer buf;
         buf.load(QByteArray("\x00", 1));

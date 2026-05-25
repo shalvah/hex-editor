@@ -12,7 +12,7 @@ class ByteBuffer {
 public:
     ByteBuffer() = default;
 
-    /*
+    /**
      * Loads a new file into the buffer (also clears modified state).
      */
     void load(const QByteArray &data);

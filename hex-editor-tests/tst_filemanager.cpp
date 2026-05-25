@@ -2,6 +2,7 @@
 #include <QTemporaryFile>
 #include "../filemanager.h"
 #include "../bytebuffer.h"
+#include "../constants.h"
 
 class FileManagerTest : public QObject {
     Q_OBJECT
@@ -54,6 +55,19 @@ private slots:
         auto err = fm.loadFile(tmp.fileName(), buf);
         QCOMPARE(err, FileManager::Error::None);
         QCOMPARE(buf.size(), 0);
+    }
+
+    void loadFileTooLarge() {
+        QTemporaryFile tmp;
+        QVERIFY(tmp.open());
+        // Sparse file: skip writing actual data, just set size
+        tmp.resize(Constants::MAX_FILE_SIZE + 1);
+        tmp.close();
+
+        FileManager fm;
+        ByteBuffer buf;
+        auto err = fm.loadFile(tmp.fileName(), buf);
+        QCOMPARE(err, FileManager::Error::TooLarge);
     }
 };
 
