@@ -2,6 +2,8 @@
 #include "bytebuffer.h"
 #include "constants.h"
 #include <QColor>
+#include <QGuiApplication>
+#include <QPalette>
 
 EditorModel::EditorModel(ByteBuffer &buffer, QObject *parent)
     : QAbstractTableModel(parent), m_buffer(buffer) {}
@@ -67,8 +69,14 @@ QVariant EditorModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::TextAlignmentRole)
         return Qt::AlignCenter;
 
-    if (role == Qt::BackgroundRole && m_buffer.modifiedIndices().contains(byteIdx))
-        return QColor(0x66, 0x5D, 0x29); // soft yellow for modified bytes
+    if (role == Qt::BackgroundRole) {
+        if (m_buffer.modifiedIndices().contains(byteIdx))
+            return QColor(0x66, 0x5D, 0x29); // yellow — modified
+        if (byteIdx == m_highlightedByte) {
+            QPalette palette = QGuiApplication::palette();
+            return palette.color(QPalette::Highlight);
+        }
+    }
 
     return {};
 }
@@ -142,6 +150,20 @@ bool EditorModel::setData(const QModelIndex &index, const QVariant &value, int r
         );
 
     return true;
+}
+
+void EditorModel::setHighlightedByte(int byteIndex) {
+    int old = m_highlightedByte;
+    m_highlightedByte = byteIndex;
+
+    // Invalidate old and new highlight rows so Qt redraws them
+    auto invalidateRow = [&](int idx) {
+        if (idx < 0) return;
+        int row = idx / Constants::BYTES_PER_ROW;
+        emit dataChanged(index(row, 0), index(row, Constants::TOTAL_COLUMNS - 1));
+    };
+    invalidateRow(old);
+    invalidateRow(byteIndex);
 }
 
 void EditorModel::reload() {

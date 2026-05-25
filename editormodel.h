@@ -52,6 +52,8 @@ public:
      */
     int byteIndex(int row, int col) const;
 
+    void setHighlightedByte(int byteIndex);
+
 private:
     /*
      * Format a byte for display in the UI
@@ -63,4 +65,5 @@ private:
     bool parseEdit(const QString &text, Panel panel, quint8 &outByte) const;
 
     ByteBuffer &m_buffer;
+    int m_highlightedByte = -1;
 };

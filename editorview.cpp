@@ -72,6 +72,15 @@ void EditorView::setEditorModel(EditorModel *model) {
     m_editorModel = model;
     setModel(model);
     applyColumnWidths();
+
+    // Cross-panel highlight for current selection
+    connect(selectionModel(), &QItemSelectionModel::currentChanged,
+            this, [this](const QModelIndex &current) {
+                if (!current.isValid()) return;
+                m_editorModel->setHighlightedByte(
+                    m_editorModel->byteIndex(current.row(), current.column())
+                    );
+            });
 }
 
 void EditorView::applyColumnWidths() {
