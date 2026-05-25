@@ -38,6 +38,10 @@ private:
      */
     void saveFile();
     /*
+     * Writes the updates to a new file on disk.
+     */
+    void saveAsFile();
+    /*
      * Opens the file selection dialog (only if there are no current changes, or the user discards them)
      */
     void openFileDialog();

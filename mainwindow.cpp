@@ -72,6 +72,10 @@ void MainWindow::setupMenuBar() {
     m_saveAction->setShortcut(QKeySequence::Save);
     connect(m_saveAction, &QAction::triggered, this, &MainWindow::saveFile);
 
+    auto *saveAsAction = fileMenu->addAction("Save &As…");
+    saveAsAction->setShortcut(QKeySequence::SaveAs);
+    connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveAsFile);
+
     fileMenu->addSeparator();
 
     auto *exitAction = fileMenu->addAction("E&xit");
@@ -148,6 +152,14 @@ void MainWindow::saveFile() {
     refreshWindowElements();
 }
 
+void MainWindow::saveAsFile() {
+    QString path = QFileDialog::getSaveFileName(this, "Save File As", m_currentPath);
+    if (path.isEmpty()) return;
+    
+    m_currentPath = path;
+    saveFile();
+}
+
 void MainWindow::setupFindPanel() {
     m_findPanel = new FindPanel(m_buffer, m_model, this);
     m_findPanel->hide();
@@ -160,9 +172,8 @@ void MainWindow::setupFindPanel() {
     
     dock->hide(); // Hide the entire dock by default so it takes no space
 
-    connect(m_findPanel, &FindPanel::requestScrollToRow, this, [this](int row) {
-        m_tableView->scrollTo(m_model.index(row, 0));
-    });
+    connect(m_findPanel, &FindPanel::requestScrollToRow, this,
+            [this](int row) { m_tableView->scrollTo(m_model.index(row, 0)); });
 }
 
 void MainWindow::refreshWindowElements() {

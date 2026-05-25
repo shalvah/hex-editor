@@ -5,12 +5,14 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+    QString path = ArgumentParser::parse(argc, argv);
+
     MainWindow w;
     w.show();
 
-    QString path = ArgumentParser::parse(argc, argv);
-    if (!path.isEmpty())
+    if (!path.isEmpty()) {
         w.openFile(path);
+    }
 
     return app.exec();
 }
