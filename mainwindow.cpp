@@ -3,13 +3,14 @@
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
 {
     setupTable();
     setupMenuBar();
-    updateTitle();
+    refreshWindowElements();
     resize(1100, 650);
 }
 
@@ -27,9 +28,9 @@ void MainWindow::setupMenuBar() {
     openAction->setShortcut(QKeySequence::Open);
     connect(openAction, &QAction::triggered, this, &MainWindow::openFileDialog);
 
-    auto *saveAction = fileMenu->addAction("&Save");
-    saveAction->setShortcut(QKeySequence::Save);
-    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+    m_saveAction = fileMenu->addAction("&Save");
+    m_saveAction->setShortcut(QKeySequence::Save);
+    connect(m_saveAction, &QAction::triggered, this, &MainWindow::saveFile);
 
     fileMenu->addSeparator();
 
@@ -79,7 +80,7 @@ void MainWindow::openFile(const QString &path) {
     m_currentPath = path;
     m_model.reload();
     m_tableView->scrollToTop();
-    updateTitle();
+    refreshWindowElements();
 }
 
 void MainWindow::saveFile() {
@@ -97,11 +98,15 @@ void MainWindow::saveFile() {
 
     // Refresh to clear modified highlights
     m_model.reload();
-    updateTitle();
+    refreshWindowElements();
 }
 
-void MainWindow::updateTitle() {
-    if (m_currentPath.isEmpty()) {
+void MainWindow::refreshWindowElements() {
+    bool fileLoaded = !m_currentPath.isEmpty();
+
+    m_saveAction->setEnabled(fileLoaded);
+
+    if (!fileLoaded) {
         setWindowTitle("Hex Editor");
         return;
     }
@@ -109,4 +114,11 @@ void MainWindow::updateTitle() {
     setWindowTitle(QString("%1%2 — Hex Editor")
                        .arg(name)
                        .arg(m_buffer.isModified() ? "*" : ""));
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (promptSaveIfModified())
+        event->accept();
+    else
+        event->ignore();
 }

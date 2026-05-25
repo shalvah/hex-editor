@@ -13,6 +13,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     void openFile(const QString &path);
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private:
     void setupTable();
     void setupMenuBar();
@@ -36,9 +39,10 @@ private:
      */
     void openFileDialog();
     /*
-     * Sets the title of the current window based on the currently loaded file.
+     * Updates the window elements based on the currently loaded file:
+     * title, menu items.
      */
-    void updateTitle();
+    void refreshWindowElements();
 
     // Dependencies
     ByteBuffer  m_buffer;
@@ -50,4 +54,6 @@ private:
      * Path to the currently loaded file. Empty if no file loaded.
      */
     QString      m_currentPath;
+    QAction *m_saveAction = nullptr;
+
 };
