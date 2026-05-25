@@ -24,7 +24,7 @@ public:
     explicit FindPanel(ByteBuffer &buffer, EditorModel &model, QWidget *parent = nullptr);
 
     /*
-     * Show and focus the input field
+     * Call to show the FindPanel and focus its input field
      */
     void activate();
 
