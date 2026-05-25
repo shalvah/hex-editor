@@ -141,12 +141,15 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode) const
 
     if (needle.isEmpty()) return {};
 
-    // Naive search — fine for files up to 100 MB
+    // Naive search — optimized to prevent allocations
     QList<int> results;
     const QByteArray &haystack = m_buffer.rawData();
-    for (int i = 0; i <= haystack.size() - needle.size(); ++i) {
-        if (haystack.mid(i, needle.size()) == needle)
-            results.append(i);
+    
+    int index = 0;
+    while ((index = haystack.indexOf(needle, index)) != -1) {
+        results.append(index);
+        index += 1; // Step forward by 1 to catch overlapping matches, matching previous behavior
     }
+
     return results;
 }
