@@ -5,21 +5,53 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QDockWidget>
+#include <QStackedWidget>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
 {
-    setupTable();
+    setupViews();
     setupFindPanel(); // Set up Find panel before setting up the menu bar, so m_findAction references an existing handle
     setupMenuBar();
     refreshWindowElements();
     resize(1100, 650);
 }
 
-void MainWindow::setupTable() {
+void MainWindow::setupViews() {
+    m_stackedWidget = new QStackedWidget(this);
+
+    // 1. Empty State View
+    m_emptyStateWidget = new QWidget(this);
+    auto *emptyLayout = new QVBoxLayout(m_emptyStateWidget);
+    emptyLayout->setAlignment(Qt::AlignCenter);
+
+    auto *emptyLabel = new QLabel("Open a file to get started", m_emptyStateWidget);
+    QFont labelFont = emptyLabel->font();
+    labelFont.setPointSize(16);
+    emptyLabel->setFont(labelFont);
+    emptyLabel->setStyleSheet("color: gray;");
+    emptyLabel->setAlignment(Qt::AlignCenter);
+
+    auto *openBtn = new QPushButton("Open File...", m_emptyStateWidget);
+    openBtn->setFixedSize(150, 40);
+    connect(openBtn, &QPushButton::clicked, this, &MainWindow::openFileDialog);
+
+    emptyLayout->addWidget(emptyLabel);
+    emptyLayout->addWidget(openBtn);
+    emptyLayout->setAlignment(openBtn, Qt::AlignHCenter);
+
+    // 2. Editor View
     m_tableView = new EditorView(this);
     m_tableView->setEditorModel(&m_model);
-    setCentralWidget(m_tableView);
+
+    // Add to stack (0 = Empty State, 1 = Editor)
+    m_stackedWidget->addWidget(m_emptyStateWidget);
+    m_stackedWidget->addWidget(m_tableView);
+
+    setCentralWidget(m_stackedWidget);
 }
 
 void MainWindow::setupMenuBar() {
@@ -133,10 +165,12 @@ void MainWindow::refreshWindowElements() {
     m_findAction->setEnabled(fileLoaded);
 
     if (!fileLoaded) {
+        m_stackedWidget->setCurrentWidget(m_emptyStateWidget);
         setWindowTitle("Hex Editor");
         return;
     }
 
+    m_stackedWidget->setCurrentWidget(m_tableView);
     QString name = QFileInfo(m_currentPath).fileName();
     setWindowTitle(QString("%1%2 — Hex Editor")
                        .arg(name)

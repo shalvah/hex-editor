@@ -6,6 +6,7 @@
 #include "filemanager.h"
 #include "findpanel.h"
 
+class QStackedWidget;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -18,7 +19,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
-    void setupTable();
+    void setupViews();
     void setupMenuBar();
     void setupFindPanel();
 
@@ -50,8 +51,11 @@ private:
     ByteBuffer  m_buffer;
     EditorModel m_model;
     FileManager m_fileManager;
-    EditorView  *m_tableView = nullptr;
-    FindPanel   *m_findPanel = nullptr;
+    
+    QStackedWidget *m_stackedWidget = nullptr;
+    QWidget        *m_emptyStateWidget = nullptr;
+    EditorView     *m_tableView = nullptr;
+    FindPanel      *m_findPanel = nullptr;
 
     /*
      * Path to the currently loaded file. Empty if no file loaded.
