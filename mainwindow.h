@@ -70,6 +70,7 @@ private:
      */
     QString m_currentPath;
     QAction *m_saveAction = nullptr;
+    QAction *m_saveAsAction = nullptr;
     QAction *m_findAction = nullptr;
 
 };

@@ -8,7 +8,7 @@ class HexEditorAppTest : public QObject {
     Q_OBJECT
 
 private slots:
-    void openViaCommandLineArgument() {
+    void openFileViaCommandLineArgument() {
         QTemporaryFile tmp;
         QVERIFY(tmp.open());
         tmp.write("TEST");

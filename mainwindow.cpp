@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QLocale>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
@@ -72,9 +73,9 @@ void MainWindow::setupMenuBar() {
     m_saveAction->setShortcut(QKeySequence::Save);
     connect(m_saveAction, &QAction::triggered, this, &MainWindow::saveFile);
 
-    auto *saveAsAction = fileMenu->addAction("Save &As…");
-    saveAsAction->setShortcut(QKeySequence::SaveAs);
-    connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveAsFile);
+    m_saveAsAction = fileMenu->addAction("Save &As…");
+    m_saveAsAction->setShortcut(QKeySequence::SaveAs);
+    connect(m_saveAsAction, &QAction::triggered, this, &MainWindow::saveAsFile);
 
     fileMenu->addSeparator();
 
@@ -183,6 +184,7 @@ void MainWindow::setupFindPanel() {
 void MainWindow::refreshWindowElements() {
     bool fileLoaded = !m_currentPath.isEmpty();
     m_saveAction->setEnabled(fileLoaded);
+    m_saveAsAction->setEnabled(fileLoaded);
     m_findAction->setEnabled(fileLoaded);
 
     if (!fileLoaded) {
@@ -193,9 +195,11 @@ void MainWindow::refreshWindowElements() {
 
     m_stackedWidget->setCurrentWidget(m_tableView);
     QString name = QFileInfo(m_currentPath).fileName();
-    setWindowTitle(QString("%1%2 — Hex Editor")
+    QString sizeStr = QLocale().formattedDataSize(m_buffer.size());
+    setWindowTitle(QString("%1%2 (%3) — Hex Editor")
                        .arg(name)
-                       .arg(m_buffer.isModified() ? "*" : ""));
+                       .arg(m_buffer.isModified() ? "*" : "")
+                       .arg(sizeStr));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
