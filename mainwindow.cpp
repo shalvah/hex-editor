@@ -15,10 +15,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
 {
     setupViews();
-    setupFindPanel(); // Set up Find panel before setting up the menu bar, so m_findAction references an existing handle
+    setupFindPanel(); // Note: We set up Find panel before setting up the menu bar, so m_findAction references an existing handle (m_findPanel)
     setupMenuBar();
 
-    // Refresh window elements (like the title asterisk) when data is changed
+    // Refresh window elements (like the asterisk in title bar) when file data is changed
     connect(&m_model, &EditorModel::dataChanged, this, [this]() {
         refreshWindowElements();
     });
@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::setupViews() {
+    // We maintain two possible views: the empty state (no file selected) and the file view.
+    // We put them in a stack.
     m_stackedWidget = new QStackedWidget(this);
 
     // 1. Empty State View
@@ -62,7 +64,7 @@ void MainWindow::setupViews() {
 }
 
 void MainWindow::setupMenuBar() {
-    // File menu
+    // "File" menu: Open, Save, Save As, Exit
     auto *fileMenu = menuBar()->addMenu("&File");
 
     auto *openAction = fileMenu->addAction("&Open…");
@@ -83,7 +85,7 @@ void MainWindow::setupMenuBar() {
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QWidget::close);
 
-    // Edit menu
+    // "Edit" menu: Find
     auto *editMenu = menuBar()->addMenu("&Edit");
 
     m_findAction = editMenu->addAction("&Find…");
@@ -92,6 +94,7 @@ void MainWindow::setupMenuBar() {
 }
 
 void MainWindow::openFileDialog() {
+    // Ensure user work is saved before we try to open a new file.
     if (!promptSaveIfModified()) return;
 
     QString path = QFileDialog::getOpenFileName(this, "Open File");
@@ -112,7 +115,7 @@ bool MainWindow::promptSaveIfModified() {
 
     if (choice == QMessageBox::Save) {
         saveFile();
-        return !m_buffer.isModified(); // false if save itself failed
+        return !m_buffer.isModified(); // If save fails, return false ("Cancel")
     }
     if (choice == QMessageBox::Discard) return true;
     return false; // Cancel
@@ -152,7 +155,7 @@ void MainWindow::saveFile() {
         return;
     }
 
-    // Refresh to clear modified highlights
+    // Refresh to clear highlighted modified cells
     m_model.reload();
     refreshWindowElements();
 }
@@ -169,13 +172,14 @@ void MainWindow::setupFindPanel() {
     m_findPanel = new FindPanel(m_buffer, m_model, this);
     m_findPanel->hide();
 
+    // For the Find Panel, we use a widget docked to the bottom of the window.
     auto *dock = new QDockWidget(this);
     dock->setWidget(m_findPanel);
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
-    dock->setTitleBarWidget(new QWidget()); // hide title bar
+    dock->setTitleBarWidget(new QWidget()); // No title bar for the Find dock widget
     addDockWidget(Qt::BottomDockWidgetArea, dock);
     
-    dock->hide(); // Hide the entire dock by default so it takes no space
+    dock->hide(); // Hide the Find widget until m_findAction is triggered (keyboard shortcut or Edit menu).
 
     connect(m_findPanel, &FindPanel::requestScrollToRow, this,
             [this](int row) { m_tableView->scrollTo(m_model.index(row, 0)); });
@@ -194,15 +198,18 @@ void MainWindow::refreshWindowElements() {
     }
 
     m_stackedWidget->setCurrentWidget(m_tableView);
-    QString name = QFileInfo(m_currentPath).fileName();
+    // For the title bar (when a file is loaded), we show
+    //   <file name> (<size>) - Hex Editor
+    // along with an asterisk if there are changes to be saved.
     QString sizeStr = QLocale().formattedDataSize(m_buffer.size());
     setWindowTitle(QString("%1%2 (%3) — Hex Editor")
-                       .arg(name)
+                       .arg(m_currentPath)
                        .arg(m_buffer.isModified() ? "*" : "")
                        .arg(sizeStr));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    // Intercept an exit to ensure user saves any changes
     if (promptSaveIfModified())
         event->accept();
     else

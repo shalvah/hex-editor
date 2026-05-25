@@ -10,6 +10,9 @@ class QStackedWidget;
 class MainWindowTest;
 class HexEditorAppTest;
 
+/**
+ * @brief The MainWindow class is the main UI element. It is initialized at startup, and instantiates and connects all other modules.
+ */
 class MainWindow : public QMainWindow {
     Q_OBJECT
     friend class MainWindowTest;
@@ -23,6 +26,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
+    // UI setup methods
     void setupViews();
     void setupMenuBar();
     void setupFindPanel();
@@ -42,7 +46,7 @@ private:
      */
     void saveFile();
     /*
-     * Writes the updates to a new file on disk.
+     * Writes the updates to a new file on disk, and updates the currentPath to point to the new file.
      */
     void saveAsFile();
     /*
@@ -69,6 +73,8 @@ private:
      * Path to the currently loaded file. Empty if no file loaded.
      */
     QString m_currentPath;
+
+    // User actions dependent on the presence of a file
     QAction *m_saveAction = nullptr;
     QAction *m_saveAsAction = nullptr;
     QAction *m_findAction = nullptr;
