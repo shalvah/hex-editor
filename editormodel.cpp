@@ -181,5 +181,8 @@ void EditorModel::setSearchMatches(const QList<int> &matches, int current) {
 void EditorModel::reload() {
     // Underlying data has been replaced; inform the view to redraw.
     beginResetModel();
+    m_highlightedByte = -1;
+    m_searchMatches.clear();
+    m_currentMatch = -1;
     endResetModel();
 }

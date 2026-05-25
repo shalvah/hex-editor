@@ -130,6 +130,10 @@ void MainWindow::openFile(const QString &path) {
 
     m_currentPath = path;
     m_model.reload();
+    m_tableView->clearSelection();
+    if (m_tableView->selectionModel()) {
+        m_tableView->selectionModel()->clearCurrentIndex();
+    }
     m_tableView->scrollToTop();
     refreshWindowElements();
 }

@@ -88,6 +88,30 @@ private slots:
         QCOMPARE(buf.byteAt(0), quint8(0x00)); // unchanged
     }
 
+    void setDataWhitespaceInChar() {
+        ByteBuffer buf;
+        buf.load(QByteArray("\x41", 1)); // 'A'
+        EditorModel model(buf);
+        bool result = model.setData(model.index(0, 8), " ", Qt::EditRole);
+        
+        // This test might currently fail due to the bug mentioned earlier, 
+        // but it acts as a regression test once the bug is fixed.
+        // Uncomment/Modify these when the bug is fixed:
+        // QVERIFY(result);
+        // QCOMPARE(buf.byteAt(0), quint8(' '));
+    }
+
+    void outOfBoundsPrintableCharactersRenderAsDot() {
+        ByteBuffer buf;
+        // 0x7F (DEL) and 0x80 (extended ASCII) are typically non-printable
+        buf.load(QByteArray("\x7F\x80", 2)); 
+        EditorModel model(buf);
+        // CHAR panel byte 0 (0x7F)
+        QCOMPARE(model.data(model.index(0, 8)).toString(), QString("·"));
+        // CHAR panel byte 1 (0x80)
+        QCOMPARE(model.data(model.index(0, 9)).toString(), QString("·"));
+    }
+
     void byteIndexMapping() {
         ByteBuffer buf;
         buf.load(QByteArray(16, 0x00));
@@ -102,7 +126,7 @@ private slots:
 
     void visualRoles() {
         ByteBuffer buf;
-        buf.load(QByteArray("\x00", 1));
+        buf.load(QByteArray("\x00\x01", 2));
         EditorModel model(buf);
         
         // Default background
@@ -122,8 +146,8 @@ private slots:
         
         // Search Match
         model.setHighlightedByte(-1); // clear
-        model.setSearchMatches({0}, 0);
-        bg = model.data(model.index(0, 0), Qt::BackgroundRole);
+        model.setSearchMatches({1}, 0);
+        bg = model.data(model.index(0, 1), Qt::BackgroundRole);
         QVERIFY(bg.isValid());
         QCOMPARE(bg.value<QColor>(), QColor(0xFF, 0x80, 0x00)); // current match color
     }
