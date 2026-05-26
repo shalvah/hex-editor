@@ -4,6 +4,7 @@
 #include <QColor>
 #include <QGuiApplication>
 #include <QPalette>
+#include <QDebug>
 
 EditorModel::EditorModel(ByteBuffer &buffer, QObject *parent)
     : QAbstractTableModel(parent), m_buffer(buffer) {}
@@ -140,6 +141,7 @@ bool EditorModel::parseEdit(const QString &text, Panel panel, quint8 &outByte) c
     case Panel::Hex: {
         uint val = trimmed.toUInt(&ok, 16);
         if (ok && val <= 0xFF) { outByte = static_cast<quint8>(val); return true; }
+        qWarning() << "EditorModel::parseEdit: Invalid hex input:" << text;
         return false;
     }
     case Panel::Char: {
@@ -148,22 +150,31 @@ bool EditorModel::parseEdit(const QString &text, Panel panel, quint8 &outByte) c
             outByte = static_cast<quint8>(text[0].toLatin1());
             return true;
         }
+        qWarning() << "EditorModel::parseEdit: Invalid char input:" << text;
         return false;
     }
     case Panel::Bin: {
         uint val = trimmed.toUInt(&ok, 2);
         if (ok && val <= 0xFF) { outByte = static_cast<quint8>(val); return true; }
+        qWarning() << "EditorModel::parseEdit: Invalid binary input:" << text;
         return false;
     }
     }
+    qWarning() << "EditorModel::parseEdit: Unknown panel type";
     return false;
 }
 
 bool EditorModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (role != Qt::EditRole || !index.isValid()) return false;
+    if (role != Qt::EditRole || !index.isValid()) {
+        qWarning() << "EditorModel::setData: Invalid role or index. Role:" << role;
+        return false;
+    }
 
     int byteIdx = byteIndex(index.row(), index.column());
-    if (byteIdx >= m_buffer.size()) return false;
+    if (byteIdx >= m_buffer.size()) {
+        qWarning() << "EditorModel::setData: Byte index out of bounds:" << byteIdx;
+        return false;
+    }
 
     quint8 newByte;
     if (!parseEdit(value.toString(), panelForColumn(index.column()), newByte))

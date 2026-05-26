@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLocale>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_model(m_buffer)
@@ -100,6 +101,8 @@ void MainWindow::openFileDialog() {
     QString path = QFileDialog::getOpenFileName(this, "Open File");
     if (!path.isEmpty())
         openFile(path);
+    else
+        qWarning() << "MainWindow::openFileDialog: User cancelled or provided empty path.";
 }
 
 bool MainWindow::promptSaveIfModified() {
@@ -143,7 +146,10 @@ void MainWindow::openFile(const QString &path) {
 }
 
 void MainWindow::saveFile() {
-    if (m_currentPath.isEmpty()) return;
+    if (m_currentPath.isEmpty()) {
+        qWarning() << "MainWindow::saveFile: Attempted to save with an empty current path.";
+        return;
+    }
 
     auto err = m_fileManager.saveFile(m_currentPath, m_buffer);
 
@@ -162,7 +168,10 @@ void MainWindow::saveFile() {
 
 void MainWindow::saveAsFile() {
     QString path = QFileDialog::getSaveFileName(this, "Save File As", m_currentPath);
-    if (path.isEmpty()) return;
+    if (path.isEmpty()) {
+        qWarning() << "MainWindow::saveAsFile: User cancelled or provided empty path.";
+        return;
+    }
     
     m_currentPath = path;
     saveFile();

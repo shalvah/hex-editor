@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QSaveFile>
 #include <QFileInfo>
+#include <QDebug>
 
 QString FileManager::errorMessage(Error error) {
     switch (error) {
@@ -22,16 +23,24 @@ FileManager::Error FileManager::loadFile(const QString &path, ByteBuffer &buffer
     QFile file(path);
     // Avoid race conditions between time-of-open and time-of-use: open file first, then handle possible errors.
     if (!file.open(QIODevice::ReadOnly)) {
-        if (!QFileInfo::exists(path)) return Error::NotFound;
+        if (!QFileInfo::exists(path)) {
+            qWarning() << "FileManager::loadFile: File not found:" << path;
+            return Error::NotFound;
+        }
+        qWarning() << "FileManager::loadFile: Could not open file for reading:" << path;
         return Error::CouldNotOpenFileForReading;
     }
 
-    if (file.size() > Constants::MAX_FILE_SIZE)
+    if (file.size() > Constants::MAX_FILE_SIZE) {
+        qWarning() << "FileManager::loadFile: File exceeds limit:" << path << file.size() << "bytes";
         return Error::TooLarge;
+    }
 
     QByteArray data = file.readAll();
-    if (data.isEmpty() && file.error() != QFileDevice::NoError)
+    if (data.isEmpty() && file.error() != QFileDevice::NoError) {
+        qWarning() << "FileManager::loadFile: Read failed:" << path << file.errorString();
         return Error::ReadFailed;
+    }
 
     buffer.load(data);
     return Error::None;
@@ -44,16 +53,20 @@ FileManager::Error FileManager::saveFile(const QString &path, ByteBuffer &buffer
     // Fallback to direct write, since user changes should take precedence.
     file.setDirectWriteFallback(true);
     
-    if (!file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "FileManager::saveFile: Could not open file for writing:" << path;
         return Error::CouldNotOpenFileForWriting;
+    }
 
     qint64 written = file.write(buffer.rawData());
     if (written != buffer.rawData().size()) {
         file.cancelWriting();
+        qWarning() << "FileManager::saveFile: Write failed (size mismatch):" << path;
         return Error::WriteFailed;
     }
 
     if (!file.commit()) {
+        qWarning() << "FileManager::saveFile: Commit failed:" << path << file.errorString();
         return Error::WriteFailed;
     }
 
