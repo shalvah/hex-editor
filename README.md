@@ -1,74 +1,76 @@
 # Hex Editor
 
-A standalone hexadecimal editor built with C++ and Qt 6.
+## Prerequisites
 
-## Running the App
+To compile and run this application, you will need a C++17 compiler, **CMake** (v3.19+), and **Qt 6** installed on your system. You can install all these with the [Qt online installer](https://doc.qt.io/qt-6/qt-online-installation.html). Ensure **CMake** and your selected compiler (e.g. MinGW 64-bit) are checked under the "Developer and Designer Tools" section.
 
-You don't need to install Qt or any development tools to run the application.
-
-1. Go to the **Releases** page on GitHub.
-2. Download the latest release `.zip` file for Windows.
-3. **Important:** Extract the entire `.zip` file to a folder on your computer. (Do not run the executable directly from inside the compressed ZIP previewer, or it will fail to load the required DLLs).
-4. Double-click `hex-editor.exe` to start the application.
+If you already have Qt installed, you can use the [Qt Maintenance Tool](https://doc.qt.io/qtinstallerframework/ifw-use-cases-add.html) to add CMake and a compiler, or install them from an external source.
 
 ---
 
-## Development
+## Building and running the application
 
-If you want to modify the code or build the project from scratch, follow these steps.
+### Windows
 
-### Prerequisites
+1. Open **Qt Command Prompt** (search "Qt" in Start menu — it's usually named "Qt 6.x.x (MinGW...)")
+2. Navigate to the project directory and run:
 
-*   **Qt 6:** (Specifically requires the `Core` and `Widgets` components).
-*   **CMake:** (Version 3.19 or higher).
-*   **C++ Compiler:** (e.g., MinGW-w64 on Windows, MSVC, GCC, or Clang).
-
-### Building with Qt Creator (Recommended)
-
-1. Open Qt Creator.
-2. Go to **File > Open File or Project...** and select the `CMakeLists.txt` file in the root directory.
-3. Configure the project by selecting a compatible Kit (e.g., Desktop Qt 6 MinGW 64-bit).
-4. Click the **Build** (hammer icon) or **Run** (green play button) in the bottom-left corner.
-
-### Building from the Command Line (Windows MinGW)
-
-1. Open the Qt Command Prompt from your Start menu (e.g., "Qt 6.10.2 (MinGW 64-bit)").
-2. Navigate to the project root directory:
-   ```cmd
-   cd path\to\hex-editor
-   ```
-3. Configure the project for a Release build:
-   ```cmd
-   cmake -B build/release -S . -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
-   ```
-4. Compile the project:
-   ```cmd
-   cmake --build build/release
-   ```
-
-### Creating a Standalone Release ZIP
-
-If you want to package the application to share with others:
-```cmd
-# Navigate to your build directory
-cd build/release
-
-# Run the deployment tool to copy required Qt and compiler DLLs
-windeployqt --compiler-runtime hex-editor.exe
+```bat
+:: Generate build configuration files
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"
+:: Build the executable
+cmake --build build
+::Copy all required Qt DLLs into the build folder
+windeployqt build\hex-editor.exe
+:: Run the executable
+build\hex-editor.exe
 ```
-After running this, you can ZIP the entire `build/release` folder.
+
+**Note:** If you installed `cmake` via Qt, it may not be found in your system PATH. Try replacing `cmake` with the full path, usually `C:\Qt\Tools\CMake_64\bin\cmake.exe`.
+
+**Note:** The `-G "MinGW Makefiles"` argument assumes you chose MinGW as the Qt compiler. If you chose something else (eg MSVC), change the argument (eg to `-G "NMake Makefiles"`), then run `del build/CMakeCache.txt` to delete the build cache, then try again.
+
+### macOS
+
+1. Ensure Qt is installed (via [qt.io](https://qt.io) or `brew install qt`)
+2. If installed via Homebrew, add Qt to your PATH first:
+```bash
+export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+```
+3. Build and run:
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+macdeployqt build/hex-editor
+build/hex-editor
+```
+
+### Linux
+
+1. Install Qt and build tools, e.g. on Ubuntu/Debian:
+```bash
+sudo apt install qt6-base-dev cmake make g++
+```
+2. Build and run:
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+build/hex-editor
+```
 
 ---
+
+**Note:** These are debug builds. For a release build, replace `Debug` with `Release` in the cmake configure step.
+
 
 ## Running Tests
 
-This project includes automated tests to ensure functionality (located in the `hex-editor-tests` directory).
+This project includes automated tests for various components built with the Qt Test framework. You can run all tests using CTest (bundled with CMake).
 
-To run the tests from the command line after building the project:
-
-```cmd
-cd build/release
+```bat
+::Navigate to the `build` directory
+cd build
 ctest --output-on-failure
 ```
-
-Alternatively, if you are using Qt Creator, you can select the test executable from the Run configuration menu and run it directly.
+   
+**Note:** As with `cmake`, you may need to use the full path for ctest (`C:\Qt\Tools\CMake_64\bin\ctest.exe`).
