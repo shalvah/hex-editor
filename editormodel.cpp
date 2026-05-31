@@ -32,8 +32,8 @@ EditorModel::Panel EditorModel::panelForColumn(int col) {
 
 int EditorModel::byteIndex(int row, int col) const {
     // First take the modulus, since all three panels map to the same N bytes per row
-    int byteCol = col % Constants::BYTES_PER_ROW;
-    return (row * Constants::BYTES_PER_ROW) + byteCol;
+    int actualColumnInPanel = col % Constants::BYTES_PER_ROW;
+    return (row * Constants::BYTES_PER_ROW) + actualColumnInPanel;
 }
 
 QVariant EditorModel::formatByte(quint8 byte, Panel panel) const {
