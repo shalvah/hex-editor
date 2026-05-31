@@ -21,7 +21,7 @@ quint8 ByteBuffer::byteAt(int index) const {
 void ByteBuffer::setByte(int index, quint8 value) {
     if (index < 0 || index >= m_data.size()) {
         qWarning() << "ByteBuffer::setByte out of bounds:" << index << "size:" << m_data.size();
-        return; // TODO Should we consider handling out-of-bounds cases differently?
+        return;
     }
     // Important to cast to uint, since char is signed on most platforms.
     if (static_cast<quint8>(m_data[index]) != value) {

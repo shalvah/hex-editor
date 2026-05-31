@@ -138,16 +138,18 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode, int &
         QString hexString = text;
         hexString.remove(QRegularExpression("\\s+"));
         
-        // Ensure even number of characters
+        // There must be an even number of characters
         if (hexString.length() % 2 != 0) return {};
-        
+
+        // Create byte sequences
         for (int i = 0; i < hexString.length(); i += 2) {
             bool ok;
             uint val = hexString.mid(i, 2).toUInt(&ok, 16);
-            if (!ok || val > 0xFF) return {}; // invalid input
+            if (!ok || val > 0xFF) return {}; // Not a valid byte
             needle.append(static_cast<char>(val));
         }
     } else if (mode == EditorModel::Panel::Char) {
+        // All characters are allowed; use Latin1/ASCII, since only single-character encodings are supported
         needle = trimmed.toLatin1();
     } else { // Bin
         QString binString = text;
@@ -155,10 +157,11 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode, int &
         
         if (binString.length() % 8 != 0) return {};
 
+        // Create byte sequences
         for (int i = 0; i < binString.length(); i += 8) {
             bool ok;
             uint val = binString.mid(i, 8).toUInt(&ok, 2);
-            if (!ok || val > 0xFF) return {};
+            if (!ok || val > 0xFF) return {}; // Not a valid byte
             needle.append(static_cast<char>(val));
         }
     }
@@ -166,14 +169,16 @@ QList<int> FindPanel::search(const QString &text, EditorModel::Panel mode, int &
     if (needle.isEmpty()) return {};
     outMatchLength = needle.length();
 
-    // Naive search — optimized to prevent allocations
+    // Our search is a simple O(N) scan, which may struggle on larger files.
+    // To prevent copying the whole array, we use a `const` reference.
+    // In future, we could implement more sophisticated search algorithms.
     QList<int> results;
     const QByteArray &haystack = m_buffer.rawData();
     
     int index = 0;
     while ((index = haystack.indexOf(needle, index)) != -1) {
         results.append(index);
-        index += 1; // Step forward by 1 to catch overlapping matches, matching previous behavior
+        index += 1; // Step forward by 1 to catch overlapping matches
     }
 
     return results;
