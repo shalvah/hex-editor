@@ -9,7 +9,7 @@ class MainWindowTest : public QObject {
     Q_OBJECT
 
 private slots:
-    void stackTransitionOnLoad() {
+    void transitionsBetweenEmptyStateAndEditorView() {
         MainWindow window;
 
         // Verify initial state: Stack should be on the empty state (index 0)
